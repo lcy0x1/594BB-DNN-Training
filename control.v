@@ -1,5 +1,12 @@
 `include "mult.v"
-`include "memory.v"
+`include "blockmem.v"
+
+/*
+Author: Arthur Wang
+Creation Date: Nov 14 
+Last Modified: Nov 16
+*/
+
 module controller(
   input clk,
   input enable,
@@ -38,6 +45,7 @@ module controller(
   wire [8:0] wsize = 9'b000011111; //TODO
   wire [8:0] xsize = 9'b001001111; //TODO
   
+  // decode wire
   wire [3:0] mode = operation[3:0];
   wire [3:0] op_a = operation[7:4];
   wire [3:0] op_b = operation[11:8];

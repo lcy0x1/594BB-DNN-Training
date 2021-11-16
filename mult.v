@@ -1,5 +1,17 @@
 `include "calc.v"
 
+/*
+Author: Arthur Wang
+Creation Date: Nov 13 
+Last Modified: Nov 14
+
+TODO: allow transpose output
+
+module mac: multiply and accumulate module
+module m8x8: 8 by 8 matrix multiplication module
+
+*/
+
 module mac(
   input [31:0] w_in,
   input [31:0] x_in,
