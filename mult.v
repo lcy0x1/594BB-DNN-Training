@@ -10,6 +10,31 @@ TODO: allow transpose output
 module mac: multiply and accumulate module
 module m8x8: 8 by 8 matrix multiplication module
 
+->  clk: clock
+->  enable: global enable, nothing shall be done if it is low
+->  reset: reset everything
+
+->  w_in: vertical input
+<-  w_out: place to shift out vertical input, typically ignored
+->  x_in: horizontal input
+<-  x_out: plaec to shift out horizontal input, typically ignored
+->  y_in: typically zero, input of shift register
+<-  y_out: output of shift register
+->  clear_in: clear signal that clears accumulator
+<-  clear_out: place to shift out clear signal, typically used for <shift>
+->  shift: shift out data on a horizontal line, paired with y_out
+
+How it works:
+                 w_in
+                   |
+--------------+----|----------- shift
+              |    v
+              +-> [   ]
+x_in, clear_in -> [mac] -> x_out, clear_out
+         y_out <- [   ] <- y_in
+                   |
+                   v
+                w_out
 */
 
 module mac(
