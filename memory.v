@@ -46,7 +46,7 @@ Write Mode:
 3. Instead of overwriting, it adds to the memory
 
 */
-module x_memory(
+module memory(
   input clk,
   input enable,
   input reset,

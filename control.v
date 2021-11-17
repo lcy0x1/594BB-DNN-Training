@@ -91,6 +91,7 @@ module controller(
 
 
   // empty wires as placeholder for unused ports
+  wire [7:0] t0;
   wire [31:0] t2 [7:0];
   wire [31:0] t3 [7:0];
   wire [31:0] zeros [7:0];
@@ -103,8 +104,8 @@ module controller(
   assign zeros[6] = 0;
   assign zeros[7] = 0;
   
-  w_blockmem wmem(clk, enable, reset, en, wwe, in_data, wsize, w_in, 2'b00, 2'b00);
-  x_blockmem xmem(clk, enable, reset, en, xwe, in_data, xsize, x_in, clear_in, y_out, y_valid, ind_w == wsize[8:0], rxs, wxs);
+  blockmem wrf(clk, enable, reset, en, wwe, in_data, wsize, w_in, t0, zeros, 8'b0, 1'b0, rws, wws);
+  blockmem xrf(clk, enable, reset, en, xwe, in_data, xsize, x_in, clear_in, y_out, y_valid, ind_w == wsize[8:0], rxs, wxs);
   
   m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, t2, t3, y_out, clear_out);
 
