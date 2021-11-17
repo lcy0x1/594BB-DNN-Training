@@ -24,7 +24,7 @@ op code == 1:
   chunk[1] = x page number (to read)
   chunk[2] = w page number (to read)
   chunk[3] = y page number (to write in bulk)
-  chunk[4] = configuration
+  chunk[4] = configuration {0, 0, use ReLU, Transpose}
 op code == 2:
   chunk[1] = destination page number (to write in serial)
   chunk[2] = write operation
@@ -46,20 +46,25 @@ module controller(
   wire [3:0] op_a = operation[7:4];
   wire [3:0] op_b = operation[11:8];
   wire [3:0] op_c = operation[15:12];
+  wire [3:0] op_d = operation[19:16];
+
+  wire transpose = opcode == 1 && op_d[0];
   
   // write enable for register file W
-  wire [3:0] wwe = opcode == 2 ? op_a[3] == 1 ? op_b : 0 : 0;
+  wire [1:0] wwe = opcode == 2 ? op_a[3] == 1 ? op_b[1:0] : 0 : opcode == 1 ? op_c[3] == 1 ? 2 : 0 : 0;
   // write enable for register file X
-  wire [3:0] xwe = opcode == 2 ? op_a[3] == 0 ? op_b : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
+  wire [1:0] xwe = opcode == 2 ? op_a[3] == 0 ? op_b[1:0] : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
   
-  // read address for register file W
-  wire [1:0] rws = opcode == 1 ? op_b[3] == 0 ? op_b[1:0] : 0 : 0;
   // write address for register file W
-  wire [1:0] wws = opcode == 2 ? op_a[3] == 1 ? op_a[1:0] : 0 : 0;
-  // read address for register file X
-  wire [1:0] rxs = opcode == 1 ? op_a[3] == 0 ? op_a[1:0] : 0 : 0;
+  wire [1:0] wws = opcode == 1 ? op_c[3] == 1 ? op_c[1:0] : 0 : opcode == 2 ? op_a[3] == 1 ? op_a[1:0] : 0 : 0;
   // write address for register file X
   wire [1:0] wxs = opcode == 1 ? op_c[3] == 0 ? op_c[1:0] : 0 : opcode == 2 ? op_a[3] == 0 ? op_a[1:0] : 0 : 0;
+
+  // read address for register file W
+  wire [1:0] rws = opcode == 1 ? op_a[3] == 1 ? op_a[1:0] : op_b[3] == 1 ? op_b[1:0] : 0 : 0;
+  // read address for register file X
+  wire [1:0] rxs = opcode == 1 ? op_a[3] == 0 ? op_a[1:0] : op_b[3] == 1 ? op_b[1:0] : 0 : 0;
+  
   
 
 
@@ -81,9 +86,12 @@ module controller(
   // wires connecting memory and multiplier
   wire [31:0] w_in [7:0];
   wire [31:0] x_in [7:0];
+  wire [7:0] x_clear_in;
+  wire [7:0] w_clear_in;
   wire [7:0] clear_in;
   wire [31:0] y_out [7:0];
   wire [7:0] clear_out;
+  wire [7:0] b_out;
 
   // output valid flag is 1 cycle delay of clear_out
   reg [7:0] y_valid;
@@ -106,10 +114,10 @@ module controller(
   assign zeros[6] = 0;
   assign zeros[7] = 0;
   
-  blockmem wrf(clk, enable, reset, en, wwe, in_data, wsize, w_in, t0, zeros, 8'b0, w_switch, rws, wws);
-  blockmem xrf(clk, enable, reset, en, xwe, in_data, xsize, x_in, clear_in, y_out, y_valid, x_switch, rxs, wxs);
+  blockmem wrf(clk, enable, reset, en, wwe, in_data, wsize, w_in, w_clear_in, y_out, y_valid, transpose ? x_switch : w_switch, rws, wws);
+  blockmem xrf(clk, enable, reset, en, xwe, in_data, xsize, x_in, x_clear_in, y_out, y_valid, transpose ? w_switch : x_switch, rxs, wxs);
   
-  m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, t2, t3, y_out, clear_out);
+  m8x8 mult(w_in, x_in, zeros, transpose ? w_clear_in : x_clear_in, enable, clear_out, clk, reset, t2, t3, y_out, clear_out, op_d, b_out);
 
   // filter out the upper edge of <opcode == 1> and persist only when memory is still shifting data out.
   assign en = opcode == 1 && !old_en || ind_wc > 0 || ind_wl > 0 || ind_xl > 0;
