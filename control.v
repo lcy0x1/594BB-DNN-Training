@@ -6,6 +6,12 @@ Author: Arthur Wang
 Creation Date: Nov 14 
 Last Modified: Nov 17
 
+TODO: read from memory
+TODO: store b_out as output of matrix multiplication
+TODO: hadamard product with b_out during matrix multiplication
+TODO: additive update as configuration for op-code = 1
+TODO: allow non-square and non 2^N size matrix multiplication
+
 ->  clk: clock
 ->  enable: global enable, nothing shall be done if it is low
 ->  reset: global reset, clears everything except memory
@@ -24,7 +30,7 @@ op code == 1:
   chunk[1] = x page number (to read)
   chunk[2] = w page number (to read)
   chunk[3] = y page number (to write in bulk)
-  chunk[4] = configuration {0, 0, use ReLU, Transpose}
+  chunk[4] = configuration {use ReLU, Transpose}
 op code == 2:
   chunk[1] = destination page number (to write in serial)
   chunk[2] = write operation
@@ -95,11 +101,9 @@ module controller(
 
   // output valid flag is 1 cycle delay of clear_out
   reg [7:0] y_valid;
-
+  
   wire w_switch, x_switch;
   
-
-
   // empty wires as placeholder for unused ports
   wire [7:0] t0;
   wire [31:0] t2 [7:0];

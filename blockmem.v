@@ -5,6 +5,12 @@ Author: Arthur Wang
 Creation Date: Nov 14 
 Last Modified: Nov 17
 
+Spec:
+This block has 8 slices, each slice has 4 pages, each page has 8 lines, each line has 64 cells.
+Each slice is currently taking 8KB from a single BRAM.
+Thus, we can increase page size up to 16 pages to take up full 32KB BRAM
+We can also have at most 4 blocks so that it takes 32 BRAMs
+
 basic wires:
 ->  clk: clock
 ->  enable: global enable. If it is low, nothing should be done
@@ -76,6 +82,9 @@ module blockmem(
   reg [2:0] waddr; // address of line to write
   wire [4:0] mid_waddr [7:0]; // cached waddr
 
+  // slice write modes:
+  // write mode == 2 && bus_valid[i] -> start bulk write, send flag 2
+  // write mode == 1 && ind == i -> enable serial write, set flag 1
   memory slice_0(clk, enable, reset, write_mode == 2 && bus_valid[0] ? 2'b10 : write_mode == 1 && ind == 0 ? 2'b01 : 2'b00, en,        write_mode == 2 ? bus_in[0] : in_data, {3'b0, size[5:0]}, {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], mid_raddr[0], mid_waddr[0]);
   memory slice_1(clk, enable, reset, write_mode == 2 && bus_valid[1] ? 2'b10 : write_mode == 1 && ind == 1 ? 2'b01 : 2'b00, mem_en[0], write_mode == 2 ? bus_in[1] : in_data, {3'b0, size[5:0]}, mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], mid_raddr[1], mid_waddr[1]);
   memory slice_2(clk, enable, reset, write_mode == 2 && bus_valid[2] ? 2'b10 : write_mode == 1 && ind == 2 ? 2'b01 : 2'b00, mem_en[1], write_mode == 2 ? bus_in[2] : in_data, {3'b0, size[5:0]}, mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], mid_raddr[2], mid_waddr[2]);
