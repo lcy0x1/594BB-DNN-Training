@@ -51,15 +51,15 @@ module controller(
   wire transpose = opcode == 1 && op_d[0];
   
   // write enable for register file W
-  wire [3:0] wwe = opcode == 2 ? op_a[3] == 1 ? op_b : 0 : opcode == 1 ? op_c[3] == 1 ? 2 : 0 : 0;
+  wire [1:0] wwe = opcode == 2 ? op_a[3] == 1 ? op_b[1:0] : 0 : opcode == 1 ? op_c[3] == 1 ? 2 : 0 : 0;
   // write enable for register file X
-  wire [3:0] xwe = opcode == 2 ? op_a[3] == 0 ? op_b : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
+  wire [1:0] xwe = opcode == 2 ? op_a[3] == 0 ? op_b[1:0] : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
   
   // write address for register file W
   wire [1:0] wws = opcode == 1 ? op_c[3] == 1 ? op_c[1:0] : 0 : opcode == 2 ? op_a[3] == 1 ? op_a[1:0] : 0 : 0;
   // write address for register file X
   wire [1:0] wxs = opcode == 1 ? op_c[3] == 0 ? op_c[1:0] : 0 : opcode == 2 ? op_a[3] == 0 ? op_a[1:0] : 0 : 0;
-  
+
   // read address for register file W
   wire [1:0] rws = opcode == 1 ? op_a[3] == 1 ? op_a[1:0] : op_b[3] == 1 ? op_b[1:0] : 0 : 0;
   // read address for register file X

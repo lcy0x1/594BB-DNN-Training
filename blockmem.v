@@ -21,13 +21,13 @@ Read related flags:
       It is on one cycle after the last data on the respective line
 
 Write related flags:
-->  operation: see below
+->  write mode: see below
 ->  in_data: input port for serial write mode
 ->  bus_in: input port for bulk write mode
 ->  bus_valid: input valid port for bulk write mode
 ->  page_write: page address to write
 
-Write Mode = operation [1:0]
+Write Mode:
 0: idle
 1: serial write, one data at a time. The size of input MUST match <size>
     Implementation: The <memory> block will iterate through every cell on a line.
@@ -40,9 +40,6 @@ Write Mode = operation [1:0]
     To be safe, it should be on before operation occurs and off after all operation ceases.
     <bus_valid> signal is on for only 1 cycle at a time, signaling the beginning of 8 data.
     It should not be on for the entire duration of 8 valid data.
-Write Config = operation [3:2]
-0: vertical read, read X
-1: horizontal read, read W
 
 Addressing:
 size[5:0] tells the number of data per line
@@ -56,7 +53,7 @@ module blockmem(
   input enable,
   input reset,
   input en,
-  input [3:0] operation,
+  input [1:0] write_mode,
   input [31:0] in_data,
   input [8:0] size,
   output [31:0] x_out [7:0],
@@ -73,9 +70,7 @@ module blockmem(
   reg [2:0] raddr; // address of line to read
   wire [4:0] mid_raddr [7:0]; // cached read address
 
-  // write related variables
-  wire [1:0] write_mode = operation[1:0];
-  wire [1:0] write_config = operation[3:2];
+  // write related variables\
   wire [7:0] lw; // flags for last write, for updating <ind>
   reg [2:0] ind; // index of currently active writing slice. Only for Write Mode 1
   reg [2:0] waddr; // address of line to write
@@ -98,13 +93,8 @@ module blockmem(
     end else if(enable) begin
       // the waddr update logic is different in write mode 1 and write mode 2
       if(write_mode == 1) begin
-        if(write_config == 0) begin // vertical read
           ind <= |lw ? ind == 7 ? 0 : ind + 1 : ind;
           waddr <= lw[7] ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
-        end else begin // horizontal read
-          waddr <= |lw ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
-          ind <= |lw && waddr == size[8:6] ? ind == 7 ? 0 : ind + 1 : ind;
-        end
       end else begin 
         // increase the line index <waddr> on finishing a line, all slices are written together
         waddr <= lw[0] ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
