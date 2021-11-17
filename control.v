@@ -4,10 +4,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 14 
-Last Modified: Nov 16
-
-TODO: replaec wlr with w_ind == wsize[8:6]
-
+Last Modified: Nov 17
 
 ->  clk: clock
 ->  enable: global enable, nothing shall be done if it is low
@@ -30,6 +27,7 @@ op code == 1:
   chunk[4] = configuration
 op code == 2:
   chunk[1] = destination page number (to write in serial)
+  chunk[2] = write operation
 */
 
 module controller(
@@ -40,7 +38,7 @@ module controller(
   input [31:0] in_data
 );
 
-  wire [8:0] wsize = 9'b000011111; //TODO
+  wire [8:0] wsize = 9'b001001111; //TODO
   wire [8:0] xsize = 9'b001001111; //TODO
   
   // decode wire
@@ -50,9 +48,9 @@ module controller(
   wire [3:0] op_c = operation[15:12];
   
   // write enable for register file W
-  wire [3:0] wwe = opcode == 2 ? op_a[3] == 1 ? 1 : 0 : 0;
+  wire [3:0] wwe = opcode == 2 ? op_a[3] == 1 ? op_b : 0 : 0;
   // write enable for register file X
-  wire [3:0] xwe = opcode == 2 ? op_a[3] == 0 ? 1 : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
+  wire [3:0] xwe = opcode == 2 ? op_a[3] == 0 ? op_b : 0 : opcode == 1 ? op_c[3] == 0 ? 2 : 0 : 0;
   
   // read address for register file W
   wire [1:0] rws = opcode == 1 ? op_b[3] == 0 ? op_b[1:0] : 0 : 0;
@@ -72,9 +70,11 @@ module controller(
   // delayed flag ofr <op_code == 1>, so that we can know the upper edge
   reg old_en;
   // cell index for W matrix, incremented every cycle
-  reg [8:0] ind_w;
-  // line index for X matrix, incremented only after W matrix completes 1 cycle
-  reg [2:0] ind_x;
+  reg [8:0] ind_wc;
+  // line index for W matrix, incremented only after <ind_wc> completes 1 cycle
+  reg [2:0] ind_wl;
+  // line index for X matrix, incremented only after <ind_wl> completes 1 cycle
+  reg [2:0] ind_xl;
   
 
 
@@ -87,6 +87,8 @@ module controller(
 
   // output valid flag is 1 cycle delay of clear_out
   reg [7:0] y_valid;
+
+  wire w_switch, x_switch;
   
 
 
@@ -104,25 +106,30 @@ module controller(
   assign zeros[6] = 0;
   assign zeros[7] = 0;
   
-  blockmem wrf(clk, enable, reset, en, wwe, in_data, wsize, w_in, t0, zeros, 8'b0, 1'b0, rws, wws);
-  blockmem xrf(clk, enable, reset, en, xwe, in_data, xsize, x_in, clear_in, y_out, y_valid, ind_w == wsize[8:0], rxs, wxs);
+  blockmem wrf(clk, enable, reset, en, wwe, in_data, wsize, w_in, t0, zeros, 8'b0, w_switch, rws, wws);
+  blockmem xrf(clk, enable, reset, en, xwe, in_data, xsize, x_in, clear_in, y_out, y_valid, x_switch, rxs, wxs);
   
   m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, t2, t3, y_out, clear_out);
 
   // filter out the upper edge of <opcode == 1> and persist only when memory is still shifting data out.
-  assign en = opcode == 1 && !old_en || ind_w > 0 || ind_x > 0;
+  assign en = opcode == 1 && !old_en || ind_wc > 0 || ind_wl > 0 || ind_xl > 0;
   
+  assign w_switch = ind_wc == wsize[5:0];
+  assign x_switch = w_switch && ind_wl == wsize[8:6];
+
   always @(posedge clk) begin
     if(reset) begin // reset behavior: clear all registers
-        ind_w <= 0;
-        ind_x <= 0;
+        ind_wc <= 0;
+        ind_wl <= 0;
+        ind_xl <= 0;
       	y_valid <= 0;
       	old_en <= 0;
     end else if(enable) begin
       if(en) begin
         // count the duration for memory to shift data out
-        ind_w <= ind_w == wsize[8:0] ? 0 : ind_w + 1;
-        ind_x <= ind_w == wsize[8:0] ? ind_x == xsize[8:6] ? 0 : ind_x + 1 : ind_x;
+        ind_wc <= w_switch ? 0 : ind_wc + 1;
+        ind_wl <= w_switch ? ind_wl == wsize[8:6] ? 0 : ind_wl + 1 : ind_wl; 
+        ind_xl <= x_switch ? ind_xl == xsize[8:6] ? 0 : ind_xl + 1 : ind_xl;
       end
       // delay <clear_out> for writing memory in bulk
       y_valid <= clear_out;

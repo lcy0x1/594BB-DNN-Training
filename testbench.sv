@@ -36,7 +36,7 @@ module testbench();
     #(CLK);
 
 
-mode = 32'h0082;
+mode = 32'h0582;
 in_data = 1;
 #(CLK);
 in_data = 0;
@@ -549,7 +549,7 @@ in_data = 1;
 #(CLK);
 in_data = 1;
 #(CLK);
-mode = 32'h0002;
+mode = 32'h0102;
 in_data = 0;
 #(CLK);
 in_data = 0;
