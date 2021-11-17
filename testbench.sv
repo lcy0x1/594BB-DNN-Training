@@ -1062,11 +1062,11 @@ in_data = 0;
 #(CLK);
 in_data = 0;
 #(CLK);
-mode = 32'h11801;
+mode = 32'h01801;
     #(CLK*96);
 mode = 0;
     #(CLK);
-mode = 32'h2811;
+mode = 32'h02811;
     
     
     

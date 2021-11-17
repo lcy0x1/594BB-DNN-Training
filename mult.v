@@ -22,6 +22,7 @@ module m8x8: 8 by 8 matrix multiplication module
 <-  clear_out: place to shift out clear signal, typically used for <shift>
 ->  shift: shift out data on a horizontal line, paired with y_out
 ->  config: configurations
+->  b_out: binary relu derivative output
 
 How it works:
                  w_in
@@ -90,7 +91,8 @@ module m8x8(
   output [31:0] x_out [7:0],
   output [31:0] z_out [7:0],
   output [7:0] clear_out,
-  input [3:0] conf
+  input [3:0] conf,
+  output [7:0] b_out
 );
   
   wire [31:0] w_mid [6:0][7:0];
@@ -103,7 +105,6 @@ module m8x8(
 
   wire [31:0] y_out[7:0];
   wire [31:0] a_out[7:0];
-  wire [7:0] b_out;
 
   relu r0(y_out[0], a_out[0], b_out[0]);
   relu r1(y_out[1], a_out[1], b_out[1]);
