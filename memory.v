@@ -26,7 +26,6 @@ Read-related wires:
 <-  out_en: delayed version of <en>, for next memory block to use
 <-  out_first: only on the first cycle after all meaningful data are read
       For <clear_out> in matrix mult to clear content after calculation
-<-  last_read: the on one cycle before out_first, signaling the end of the process
 <-  out_raddr: delayed version of <raddr>
 
 Write-related wires:
@@ -47,7 +46,7 @@ Write Mode:
 3. Instead of overwriting, it adds to the memory
 
 */
-module x_memory(
+module memory(
   input clk,
   input enable,
   input reset,
@@ -61,7 +60,6 @@ module x_memory(
   output reg out_en,
   output reg out_first,
   output reg last_write,
-  output reg last_read,
   output reg [4:0] out_raddr,
   output reg [4:0] out_waddr
 );
@@ -82,7 +80,6 @@ module x_memory(
       out_en <= 0;
       out_first <= 0;
       last_write <= 0;
-      last_read <= 0;
       cont_write <= 0;
     end else if(enable) begin
       // increase read counter / write counter / continuation countdown if enabled
@@ -101,10 +98,9 @@ module x_memory(
       out_en <= en;
       out_raddr <= raddr;
       out_waddr <= waddr;
-      // ending flags. for last_read and last_write, use size - 1 because it has extra delay
+      // ending flags. for last_write, use size - 1 because it has extra delay
       out_first <= out_en && rind == 0;
       last_write <= write_mode == 1 && wind == size - 1 || (|cont_write) && wind == size - 1;
-      last_read <= en && (rind == size - 1);
     end
   end
   
