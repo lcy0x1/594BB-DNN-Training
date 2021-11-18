@@ -34,6 +34,31 @@ op code == 1:
 op code == 2:
   chunk[1] = destination page number (to write in serial)
   chunk[2] = write operation
+
+original:
+  11 12 13 14
+  21 22 23 24
+  31 32 33 34
+  41 42 43 44
+
+only transpose mult
+  11 21 13 23
+  12 22 14 24
+  31 41 33 43
+  32 42 34 44
+
+only transpose switch
+  11 12 31 32
+  21 22 41 42
+  13 14 33 34
+  23 24 43 44
+
+both transpose
+  11 21 31 41
+  12 22 32 42
+  13 23 33 43
+  14 24 34 44
+
 */
 
 module controller(

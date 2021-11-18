@@ -138,7 +138,6 @@ module m8x8(
   mac m60(w_mid[5][0], tr ? w_in[6] : x_in[6], y_mid[6][0], clear_in[6], enable, shift[6], clk, reset, w_mid[6][0], x_mid[6][0], y_out[6], clear_mid[6][0]);
   mac m70(w_mid[6][0], tr ? w_in[7] : x_in[7], y_mid[7][0], clear_in[7], enable, shift[7], clk, reset, w_out[0],    x_mid[7][0], y_out[7], clear_mid[7][0]);
   
-  
   mac m01(tr ? x_in[1] : w_in[1], x_mid[0][0], y_mid[0][1], clear_mid[0][0], enable, shift[0], clk, reset, w_mid[0][1], x_mid[0][1], y_mid[0][0], clear_mid[0][1]);
   mac m11(w_mid[0][1], x_mid[1][0], y_mid[1][1], clear_mid[1][0], enable, shift[1], clk, reset, w_mid[1][1], x_mid[1][1], y_mid[1][0], clear_mid[1][1]);
   mac m21(w_mid[1][1], x_mid[2][0], y_mid[2][1], clear_mid[2][0], enable, shift[2], clk, reset, w_mid[2][1], x_mid[2][1], y_mid[2][0], clear_mid[2][1]);
