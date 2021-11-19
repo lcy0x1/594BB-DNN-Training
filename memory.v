@@ -1,7 +1,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 14 
-Last Modified: Nov 17
+Last Modified: Nov 18
 
 this is a memory slice that has 1 input port and 1 output port
 basic wires:

@@ -3,7 +3,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 14 
-Last Modified: Nov 17
+Last Modified: Nov 18
 
 Spec:
 This block has 8 slices, each slice has 4 pages, each page has 8 lines, each line has 64 cells.
