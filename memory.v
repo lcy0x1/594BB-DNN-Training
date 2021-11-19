@@ -18,9 +18,12 @@ Read-related wires:
 ->  en: read enable
 ->  read_page_line: read address
 <-  out_data: data output port
-<-  next_read_en: delayed version of <en>, for next memory block to use
+<-  next_read_mode: delayed version of <en>, for next memory block to use
 <-  read_finish: only on the first cycle after all meaningful data are read
       For <clear_out> in matrix mult to clear content after calculation
+      Only in read mode 1
+<-  last_read: last cycle of read of current line
+      Only in read mode 2
 <-  next_read_page_line: delayed version of <read_page_line>
 
 Write-related wires:
@@ -53,16 +56,17 @@ module memory(
   input enable,
   input reset,
   input [1:0] write_mode,
-  input read_en,
+  input [1:0] read_mode,
   input [31:0] in_data,
   input [5:0] size,
   input [4:0] read_page_line,
   input [4:0] write_page_line,
   output reg [31:0] out_data,
-  output reg next_read_en,
+  output [1:0] next_read_mode,
   output reg read_finish,
   output reg last_write,
-  output reg [4:0] next_read_page_line,
+  output reg last_read,
+  output [4:0] next_read_page_line,
   output [4:0] next_write_page_line
 );
 
@@ -70,34 +74,39 @@ module memory(
   reg [5:0] write_cell; // counter for write index
   reg [3:0] cont_write; // continuation countdown for Write Mode 2
   reg [4:0] delay_write_page_line; // delayed version of write_page_line
+  reg [4:0] delay_read_page_line; // delayed version of read_page_line
   reg delay_bulk_we;
   reg [31:0] data [2047:0]; // BRAM
+  reg delay_read_mode;
   
   wire [10:0] read_index = {read_page_line, read_cell}; // actual read index
   wire [10:0] write_index = {write_page_line, write_cell}; // actual write index
 
   assign next_write_page_line = delay_bulk_we ? delay_write_page_line : write_page_line;
+  assign next_read_page_line = read_mode == 2 ? read_page_line : delay_read_page_line;
+  assign next_read_mode = read_mode == 2 ? 2 : delay_read_mode ? 1 : 0;
 
   wire bulk_we = write_mode == 2 || cont_write > 0;
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior
       out_data <= 0;
-      next_read_en <= 0;
       read_finish <= 0;
       last_write <= 0;
-      next_read_page_line <= 0;
+      last_read <= 0;
+      delay_read_page_line <= 0;
       delay_write_page_line <= 0;
       read_cell <= 0;
       write_cell <= 0;
       cont_write <= 0;
+      delay_read_mode <= 0;
     end else if(enable) begin
       // increase read counter / write counter / continuation countdown if enabled
-      read_cell <= read_en ? read_cell == size ? 0 : read_cell + 1 : read_cell;
+      read_cell <= read_mode > 0 ? read_cell == size ? 0 : read_cell + 1 : read_cell;
       write_cell <= write_mode > 0 || cont_write > 0 ? write_cell == size ? 0 : write_cell + 1 : write_cell;
       cont_write <= write_mode == 2 ? 7 : cont_write > 0 ? cont_write - 1 : 0;
       // perform read operation
-      out_data <= read_en ? data[read_index] : 0;
+      out_data <= read_mode > 0 ? data[read_index] : 0;
       // perform write operation
       if(write_mode == 1 || bulk_we) begin
         data[write_index] <= in_data;
@@ -105,13 +114,14 @@ module memory(
         data[write_index] <= data[write_index] + in_data;
       end
       // delayed version of inputs
-      next_read_en <= read_en;
-      next_read_page_line <= read_page_line;
+      delay_read_mode <= read_mode[0];
+      delay_read_page_line <= read_page_line;
       delay_write_page_line <= bulk_we ? write_page_line : 0;
       delay_bulk_we <= bulk_we;
       // ending flags. for last_write, use size - 1 because it has extra delay
-      read_finish <= next_read_en && read_cell == 0;
+      read_finish <= delay_read_mode && read_cell == 0;
       last_write <= write_mode == 1 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
+      last_read <= read_mode == 2 && read_cell == size - 1;
     end
   end
   

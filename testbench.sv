@@ -9,8 +9,9 @@ module testbench();
   reg reset;
   reg [31:0] mode;
   reg signed [31:0] in_data;
+  wire signed [31:0] out_data;
   
-  controller main(clk, enable, reset, mode, in_data);
+  controller main(clk, enable, reset, mode, in_data, out_data);
   
   initial begin
     #1;
