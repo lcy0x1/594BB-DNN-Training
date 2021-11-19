@@ -3,7 +3,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 14 
-Last Modified: Nov 18
+Last Modified: Nov 19
 
 Spec:
 This block has 8 slices, each slice has 4 pages, each page has 8 lines, each line has 64 cells.
@@ -79,7 +79,7 @@ module blockmem(
   wire [4:0] mid_raddr [7:0]; // cached read address
   wire [7:0] lr;
 
-  // write related variables\
+  // write related variables
   wire [7:0] lw; // flags for last write, for updating <ind>
   reg [2:0] write_slice_ind; // index of currently active writing slice. Only for Write Mode 1
   reg [2:0] waddr; // address of line to write
@@ -97,7 +97,9 @@ module blockmem(
   memory slice_6(clk, enable, reset, write_mode == 2 && bus_valid[6] ? 2'b10 : write_mode == 1 && write_slice_ind == 6 ? 2'b01 : 2'b00, mem_en[5], write_mode == 2 ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
   memory slice_7(clk, enable, reset, write_mode == 2 && bus_valid[7] ? 2'b10 : write_mode == 1 && write_slice_ind == 7 ? 2'b01 : 2'b00, mem_en[6], write_mode == 2 ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
   
-  assign out_data = read_mode == 2 ? x_out[{1'b0,read_slice_ind}] : 32'b0;
+  assign out_data = read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
+
+  reg [2:0] delay_read_slice_ind;
 
   always @(posedge clk) begin
     if(reset) begin // reset behaior: clear al registers
@@ -105,6 +107,7 @@ module blockmem(
       write_slice_ind <= 0;
       raddr <= 0;
       waddr <= 0;
+      delay_read_slice_ind <= 0;
     end else if(enable) begin
       // the waddr update logic is different in write mode 1 and write mode 2
       if(write_mode == 1) begin
@@ -120,6 +123,7 @@ module blockmem(
       end else begin
         read_slice_ind <= |lr ? read_slice_ind == 7 ? 0 : read_slice_ind + 1 : read_slice_ind;
         raddr <= lr[7] ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
+        delay_read_slice_ind <= read_slice_ind;
       end
     end
   end

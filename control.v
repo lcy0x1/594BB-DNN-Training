@@ -4,7 +4,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 14 
-Last Modified: Nov 18
+Last Modified: Nov 19
 
 TODO: read from memory
 TODO: store b_out as output of matrix multiplication
@@ -168,7 +168,32 @@ module controller(
   blockmem rf_1(clk, enable, reset, {re_1, en}, we_1, in_data, size, chunk_read_1, clear_in_1, y_out, y_valid, switch_1, rp_1, wp_1, out_data_1);
   blockmem rf_2(clk, enable, reset, {re_2, en}, we_2, in_data, size, chunk_read_2, clear_in_2, y_out, y_valid, switch_2, rp_2, wp_2, out_data_2);
   blockmem rf_3(clk, enable, reset, {re_3, en}, we_3, in_data, size, chunk_read_3, clear_in_3, y_out, y_valid, switch_3, rp_3, wp_3, out_data_3);
-  
+
+  assign w_in[0] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[0] : op_b[3:2] == 1 ? chunk_read_1[0] : op_b[3:2] == 2 ? chunk_read_2[0] : op_b[3:2] == 3 ? chunk_read_3[0] : 0 : 0;
+  assign w_in[1] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[1] : op_b[3:2] == 1 ? chunk_read_1[1] : op_b[3:2] == 2 ? chunk_read_2[1] : op_b[3:2] == 3 ? chunk_read_3[1] : 0 : 0;
+  assign w_in[2] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[2] : op_b[3:2] == 1 ? chunk_read_1[2] : op_b[3:2] == 2 ? chunk_read_2[2] : op_b[3:2] == 3 ? chunk_read_3[2] : 0 : 0;
+  assign w_in[3] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[3] : op_b[3:2] == 1 ? chunk_read_1[3] : op_b[3:2] == 2 ? chunk_read_2[3] : op_b[3:2] == 3 ? chunk_read_3[3] : 0 : 0;
+  assign w_in[4] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[4] : op_b[3:2] == 1 ? chunk_read_1[4] : op_b[3:2] == 2 ? chunk_read_2[4] : op_b[3:2] == 3 ? chunk_read_3[4] : 0 : 0;
+  assign w_in[5] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[5] : op_b[3:2] == 1 ? chunk_read_1[5] : op_b[3:2] == 2 ? chunk_read_2[5] : op_b[3:2] == 3 ? chunk_read_3[5] : 0 : 0;
+  assign w_in[6] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[6] : op_b[3:2] == 1 ? chunk_read_1[6] : op_b[3:2] == 2 ? chunk_read_2[6] : op_b[3:2] == 3 ? chunk_read_3[6] : 0 : 0;
+  assign w_in[7] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[7] : op_b[3:2] == 1 ? chunk_read_1[7] : op_b[3:2] == 2 ? chunk_read_2[7] : op_b[3:2] == 3 ? chunk_read_3[7] : 0 : 0;
+  assign x_in[0] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[0] : op_a[3:2] == 1 ? chunk_read_1[0] : op_a[3:2] == 2 ? chunk_read_2[0] : op_a[3:2] == 3 ? chunk_read_3[0] : 0 : 0;
+  assign x_in[1] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[1] : op_a[3:2] == 1 ? chunk_read_1[1] : op_a[3:2] == 2 ? chunk_read_2[1] : op_a[3:2] == 3 ? chunk_read_3[1] : 0 : 0;
+  assign x_in[2] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[2] : op_a[3:2] == 1 ? chunk_read_1[2] : op_a[3:2] == 2 ? chunk_read_2[2] : op_a[3:2] == 3 ? chunk_read_3[2] : 0 : 0;
+  assign x_in[3] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[3] : op_a[3:2] == 1 ? chunk_read_1[3] : op_a[3:2] == 2 ? chunk_read_2[3] : op_a[3:2] == 3 ? chunk_read_3[3] : 0 : 0;
+  assign x_in[4] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[4] : op_a[3:2] == 1 ? chunk_read_1[4] : op_a[3:2] == 2 ? chunk_read_2[4] : op_a[3:2] == 3 ? chunk_read_3[4] : 0 : 0;
+  assign x_in[5] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[5] : op_a[3:2] == 1 ? chunk_read_1[5] : op_a[3:2] == 2 ? chunk_read_2[5] : op_a[3:2] == 3 ? chunk_read_3[5] : 0 : 0;
+  assign x_in[6] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[6] : op_a[3:2] == 1 ? chunk_read_1[6] : op_a[3:2] == 2 ? chunk_read_2[6] : op_a[3:2] == 3 ? chunk_read_3[6] : 0 : 0;
+  assign x_in[7] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[7] : op_a[3:2] == 1 ? chunk_read_1[7] : op_a[3:2] == 2 ? chunk_read_2[7] : op_a[3:2] == 3 ? chunk_read_3[7] : 0 : 0;
+
+  wire tx_switch = transpose ? w_switch : x_switch;
+  wire tw_switch = transpose ? x_switch : w_switch;
+
+  assign switch_0 = opcode == 1 ? op_a[3:2] == 0 ? tx_switch : op_b[3:2] == 0 ? tw_switch : 0 : 0;
+  assign switch_1 = opcode == 1 ? op_a[3:2] == 1 ? tx_switch : op_b[3:2] == 1 ? tw_switch : 0 : 0;
+  assign switch_2 = opcode == 1 ? op_a[3:2] == 2 ? tx_switch : op_b[3:2] == 2 ? tw_switch : 0 : 0;
+  assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? tx_switch : op_b[3:2] == 3 ? tw_switch : 0 : 0;
+
   m8x8 mult(w_in, x_in, zeros, transpose ? clear_in_1 : clear_in_0, enable, clear_out, clk, reset, t2, t3, y_out, clear_out, op_d, b_out);
 
   assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
