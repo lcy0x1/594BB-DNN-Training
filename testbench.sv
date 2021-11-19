@@ -9,8 +9,9 @@ module testbench();
   reg reset;
   reg [31:0] mode;
   reg signed [31:0] in_data;
+  wire signed [31:0] out_data;
   
-  controller main(clk, enable, reset, mode, in_data);
+  controller main(clk, enable, reset, mode, in_data, out_data);
   
   initial begin
     #1;
@@ -34,7 +35,7 @@ module testbench();
     reset = 0;
     enable = 1;
     #(CLK);
-mode = 32'h0182;
+mode = 32'h0142;
 in_data = 1;
 #(CLK);
 in_data = 0;
@@ -1061,16 +1062,16 @@ in_data = 0;
 in_data = 0;
 #(CLK);
 
-mode = 32'h01801;
+    mode = 32'h1401;
     #(CLK*96);
-mode = 0;
+    mode = 0;
     #(CLK);
-mode = 32'h02811;
-    
-    
-    
-
-    #(CLK*128);
+    mode = 32'h2411;
+    #(CLK*96);
+    mode = 32'h0023;
+    #(CLK*256);
+    mode = 32'h0;
+    #(CLK*25);
     
     $finish;
   end
