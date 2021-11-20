@@ -15,16 +15,16 @@ basic wires:
 ->  size: length of one line
 
 Read-related wires:
-->  en: read enable
+->  read_mode: read mode, see below
 ->  read_page_line: read address
 <-  out_data: data output port
-<-  next_read_mode: delayed version of <en>, for next memory block to use
+<-  next_read_mode: <read_mode> for next memory block to use
 <-  read_finish: only on the first cycle after all meaningful data are read
       For <clear_out> in matrix mult to clear content after calculation
       Only in read mode 1
 <-  last_read: last cycle of read of current line
       Only in read mode 2
-<-  next_read_page_line: delayed version of <read_page_line>
+<-  next_read_page_line: <read_page_line> for next memory block to use
 
 Write-related wires:
 ->  write_mode: see below for meaning of each wire
@@ -49,6 +49,11 @@ Write Mode:
 2. Write 8 consecutive value. This is primarily for saving results from the 8x8 mult.
     It MUST be on for only 1 cycle, and then for the rest of the time it MUST be "0".
 3. Instead of overwriting, it adds to the memory
+
+Read Mode:
+0: Idle
+1: Read data in bulk
+2: Read data serially
 
 */
 module memory(

@@ -6,7 +6,6 @@ Author: Arthur Wang
 Creation Date: Nov 14 
 Last Modified: Nov 19
 
-TODO: read from memory
 TODO: store b_out as output of matrix multiplication
 TODO: hadamard product with b_out during matrix multiplication
 TODO: additive update as configuration for op-code = 1
@@ -19,9 +18,8 @@ TODO: allow non-square and non 2^N size matrix multiplication
 ->  in_data: input data, for reading matrix only
 
 Page Addresses:
-4 bits, highest bits tells which register file to use
-  use XRF for low, use WRF for high
-rest of it is for page number
+4 bits, highest 2 bits tells which register file to use.
+Lower 2 bits is for page number
 
 Operations: typically segregated by chunk of 4 bits
 chunk[0]: op code
@@ -35,30 +33,6 @@ op code == 2:
   chunk[1] = destination page number (to write in serial)
 op code == 3:
   chunk[1] = source page number (to read in serial)
-
-original:
-  11 12 13 14
-  21 22 23 24
-  31 32 33 34
-  41 42 43 44
-
-only transpose mult
-  11 21 13 23
-  12 22 14 24
-  31 41 33 43
-  32 42 34 44
-
-only transpose switch
-  11 12 31 32
-  21 22 41 42
-  13 14 33 34
-  23 24 43 44
-
-both transpose
-  11 21 31 41
-  12 22 32 42
-  13 23 33 43
-  14 24 34 44
 
 */
 

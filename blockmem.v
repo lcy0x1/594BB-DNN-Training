@@ -47,6 +47,11 @@ Write Mode:
     <bus_valid> signal is on for only 1 cycle at a time, signaling the beginning of 8 data.
     It should not be on for the entire duration of 8 valid data.
 
+Read Mode:
+0: idle
+1: bulk read. It should be one for the entire span of reading process.
+2: serial read.
+
 Addressing:
 size[5:0] tells the number of data per line
 size[8:6] tells the number of line per page
