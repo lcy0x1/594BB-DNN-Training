@@ -55,6 +55,7 @@ module controller(
   wire [3:0] op_c = operation[15:12];
   wire [3:0] op_d = operation[19:16];
   wire [3:0] op_e = operation[23:20];
+  wire [3:0] op_f = operation[27:24];
 
   wire transpose = opcode == 1 && op_d[0];
   
@@ -68,7 +69,7 @@ module controller(
 //   }
 // } else if(opcode == 1){
 //   if(op_c[3:2] == 0){
-//     return 2;
+//     if(op_f[0]==1){ return 4; } else { return 2; }
 //   } else if(op_e[3:2] == 0){
 //     return 2;
 //   } else {
@@ -79,10 +80,10 @@ module controller(
 // }
 
 
-  wire [1:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 0 ? 2 : op_e[3:2] == 0 ? 2 : 0 : 0;
-  wire [1:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 1 ? 2 : op_e[3:2] == 1 ? 2 : 0 : 0;
-  wire [1:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 2 ? 2 : op_e[3:2] == 2 ? 2 : 0 : 0;
-  wire [1:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 3 ? 2 : op_e[3:2] == 3 ? 2 : 0 : 0;
+  wire [2:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 0 ? op_f[0]? 4 : 2 : op_e[3:2] == 0 ? 2 : 0 : 0;
+  wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 1 ? op_f[0]? 4 : 2 : op_e[3:2] == 1 ? 2 : 0 : 0;
+  wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 2 ? op_f[0]? 4 : 2 : op_e[3:2] == 2 ? 2 : 0 : 0;
+  wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 3 ? op_f[0]? 4 : 2 : op_e[3:2] == 3 ? 2 : 0 : 0;
   
   // read mode 2nd bit for register file
   wire re_0 = opcode == 3 ? op_a[3:2] == 0 ? 1 : 0 : 0;
