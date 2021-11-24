@@ -34,6 +34,7 @@ op code == 2:
 op code == 3:
   chunk[1] = source page number (to read in serial)
 
+
 */
 
 module controller(
@@ -53,6 +54,7 @@ module controller(
   wire [3:0] op_b = operation[11:8];
   wire [3:0] op_c = operation[15:12];
   wire [3:0] op_d = operation[19:16];
+  wire [3:0] op_e = operation[23:20];
 
   wire transpose = opcode == 1 && op_d[0];
   
@@ -106,6 +108,10 @@ module controller(
   wire [7:0] clear_in_1;
   wire [7:0] clear_in_2;
   wire [7:0] clear_in_3;
+  wire [31:0] chunk_write_0 [7:0];
+  wire [31:0] chunk_write_1 [7:0];
+  wire [31:0] chunk_write_2 [7:0];
+  wire [31:0] chunk_write_3 [7:0];  
   wire switch_0;
   wire switch_1;
   wire switch_2;
@@ -143,22 +149,18 @@ module controller(
   blockmem rf_2(clk, enable, reset, {re_2, en}, we_2, in_data, size, chunk_read_2, clear_in_2, y_out, y_valid, switch_2, rp_2, wp_2, out_data_2);
   blockmem rf_3(clk, enable, reset, {re_3, en}, we_3, in_data, size, chunk_read_3, clear_in_3, y_out, y_valid, switch_3, rp_3, wp_3, out_data_3);
 
-  assign w_in[0] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[0] : op_b[3:2] == 1 ? chunk_read_1[0] : op_b[3:2] == 2 ? chunk_read_2[0] : op_b[3:2] == 3 ? chunk_read_3[0] : 0 : 0;
-  assign w_in[1] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[1] : op_b[3:2] == 1 ? chunk_read_1[1] : op_b[3:2] == 2 ? chunk_read_2[1] : op_b[3:2] == 3 ? chunk_read_3[1] : 0 : 0;
-  assign w_in[2] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[2] : op_b[3:2] == 1 ? chunk_read_1[2] : op_b[3:2] == 2 ? chunk_read_2[2] : op_b[3:2] == 3 ? chunk_read_3[2] : 0 : 0;
-  assign w_in[3] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[3] : op_b[3:2] == 1 ? chunk_read_1[3] : op_b[3:2] == 2 ? chunk_read_2[3] : op_b[3:2] == 3 ? chunk_read_3[3] : 0 : 0;
-  assign w_in[4] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[4] : op_b[3:2] == 1 ? chunk_read_1[4] : op_b[3:2] == 2 ? chunk_read_2[4] : op_b[3:2] == 3 ? chunk_read_3[4] : 0 : 0;
-  assign w_in[5] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[5] : op_b[3:2] == 1 ? chunk_read_1[5] : op_b[3:2] == 2 ? chunk_read_2[5] : op_b[3:2] == 3 ? chunk_read_3[5] : 0 : 0;
-  assign w_in[6] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[6] : op_b[3:2] == 1 ? chunk_read_1[6] : op_b[3:2] == 2 ? chunk_read_2[6] : op_b[3:2] == 3 ? chunk_read_3[6] : 0 : 0;
-  assign w_in[7] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[7] : op_b[3:2] == 1 ? chunk_read_1[7] : op_b[3:2] == 2 ? chunk_read_2[7] : op_b[3:2] == 3 ? chunk_read_3[7] : 0 : 0;
-  assign x_in[0] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[0] : op_a[3:2] == 1 ? chunk_read_1[0] : op_a[3:2] == 2 ? chunk_read_2[0] : op_a[3:2] == 3 ? chunk_read_3[0] : 0 : 0;
-  assign x_in[1] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[1] : op_a[3:2] == 1 ? chunk_read_1[1] : op_a[3:2] == 2 ? chunk_read_2[1] : op_a[3:2] == 3 ? chunk_read_3[1] : 0 : 0;
-  assign x_in[2] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[2] : op_a[3:2] == 1 ? chunk_read_1[2] : op_a[3:2] == 2 ? chunk_read_2[2] : op_a[3:2] == 3 ? chunk_read_3[2] : 0 : 0;
-  assign x_in[3] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[3] : op_a[3:2] == 1 ? chunk_read_1[3] : op_a[3:2] == 2 ? chunk_read_2[3] : op_a[3:2] == 3 ? chunk_read_3[3] : 0 : 0;
-  assign x_in[4] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[4] : op_a[3:2] == 1 ? chunk_read_1[4] : op_a[3:2] == 2 ? chunk_read_2[4] : op_a[3:2] == 3 ? chunk_read_3[4] : 0 : 0;
-  assign x_in[5] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[5] : op_a[3:2] == 1 ? chunk_read_1[5] : op_a[3:2] == 2 ? chunk_read_2[5] : op_a[3:2] == 3 ? chunk_read_3[5] : 0 : 0;
-  assign x_in[6] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[6] : op_a[3:2] == 1 ? chunk_read_1[6] : op_a[3:2] == 2 ? chunk_read_2[6] : op_a[3:2] == 3 ? chunk_read_3[6] : 0 : 0;
-  assign x_in[7] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[7] : op_a[3:2] == 1 ? chunk_read_1[7] : op_a[3:2] == 2 ? chunk_read_2[7] : op_a[3:2] == 3 ? chunk_read_3[7] : 0 : 0;
+  genvar i;
+  generate
+    for(i=0;i<8;i=i+1) begin
+      assign w_in[i] = opcode == 1 ? op_b[3:2] == 0 ? chunk_read_0[i] : op_b[3:2] == 1 ? chunk_read_1[i] : op_b[3:2] == 2 ? chunk_read_2[i] : op_b[3:2] == 3 ? chunk_read_3[i] : 0 : 0;
+      assign x_in[i] = opcode == 1 ? op_a[3:2] == 0 ? chunk_read_0[i] : op_a[3:2] == 1 ? chunk_read_1[i] : op_a[3:2] == 2 ? chunk_read_2[i] : op_a[3:2] == 3 ? chunk_read_3[i] : 0 : 0;
+
+      assign chunk_write_0[i] = opcode == 1 ? op_c[3:2] == 0 ? y_out[i] : op_e[3:2] == 0 ? {31'b0, b_out[i]} : 0 : 0;
+      assign chunk_write_1[i] = opcode == 1 ? op_c[3:2] == 1 ? y_out[i] : op_e[3:2] == 1 ? {31'b0, b_out[i]} : 0 : 0;
+      assign chunk_write_2[i] = opcode == 1 ? op_c[3:2] == 2 ? y_out[i] : op_e[3:2] == 2 ? {31'b0, b_out[i]} : 0 : 0;
+      assign chunk_write_3[i] = opcode == 1 ? op_c[3:2] == 3 ? y_out[i] : op_e[3:2] == 3 ? {31'b0, b_out[i]} : 0 : 0;
+    end
+  endgenerate
 
   wire tx_switch = transpose ? w_switch : x_switch;
   wire tw_switch = transpose ? x_switch : w_switch;
