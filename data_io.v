@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`include "data_interface.v"
 /*
 Author: Arthur Wang
 Create Data: Oct 31
@@ -40,7 +40,7 @@ module data_io(
     //11: Invalid
     
     reg [15:0] in_buffer;
-    reg in_valid;
+    reg in_enable;
     
     reg [15:0] in_count;
     reg [15:0] out_count;
@@ -55,16 +55,16 @@ module data_io(
     assign M_AXIS_TVALID = out_state == 1 || out_state == 2 || M_AXIS_TLAST; //we want to transmit if we are in state 2, or if we have reached the end of a packet
     assign M_AXIS_TKEEP = (out_state == 1 || out_state == 2) ? 3 : 0; //if we are in state 2, then the data values are a sum that we want to save and should be labeled as such
     
-    assign S_AXIS_TREADY = (out_state < 2) && M_AXIS_TREADY;//ready to process a new bit of data as long as output FIFO is ready
+    assign S_AXIS_TREADY = (out_state < 2) && M_AXIS_TREADY && itf_ready; //ready to process a new bit of data as long as output FIFO is ready and interface is ready
     assign M_AXIS_TDATA = 
             out_state == 1 ? databuf[0] : 
             out_state == 2 ? databuf[1] : 0;
     
-    wire enable = out_state < 2 && in_valid && (RX || in_count == 0);
-    wire wy_valid;
-    wire y_valid = enable && wy_valid;
+    wire enable = out_state < 2 && in_enable && (RX || in_count == 0 || ~itf_ready);
+    wire itf_y_valid;
+    wire y_valid = enable && itf_y_valid;
     
-    wrapper wp(S_AXIS_ACLK, !S_AXIS_ARESETN, in_buffer, in_valid, data_out, wy_valid, wr_out_count, wr_outc_valid);
+    data_interface itf(S_AXIS_ACLK, !S_AXIS_ARESETN, in_buffer, enable, data_out, itf_y_valid, wr_out_count, wr_outc_valid, itf_ready);
     
     always @(posedge S_AXIS_ACLK) begin
         if (!S_AXIS_ARESETN) begin
@@ -77,7 +77,7 @@ module data_io(
             
             in_state <= 0;
             in_buffer <= 0;
-            in_valid <= 0;
+            in_enable <= 0;
         end
         else begin
             //state update
@@ -104,11 +104,11 @@ module data_io(
                         in_count <= in_count - 1;
                     end
                     in_buffer <= S_AXIS_TDATA;
-                    in_valid <= in_count > 0;
+                    in_enable <= in_count > 0;
                 end
             end
             
-            if(enable) begin
+            if(y_valid) begin
                 databuf[0] <= data_out;
                 databuf[1] <= databuf[0];
             end

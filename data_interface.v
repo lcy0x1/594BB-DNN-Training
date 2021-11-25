@@ -1,3 +1,4 @@
+`include "control.v"
 /*
 Author: Arthur Wang
 Create Date: Nov 19
@@ -18,12 +19,6 @@ number of operations
 expected output length
 data
 
-data could be the following:
-type 0: idle, not enabled
-type 1: operation
-type 2: data chunk
-type 3: waiting, enabled
-
 */
 
 module data_interface(
@@ -34,7 +29,42 @@ module data_interface(
     output wire [31:0] data_out,
     output wire y_valid,
     output reg [31:0] out_count,
-    output reg out_count_valid
+    output reg out_count_valid,
+    output reg ready
 );
+
+  reg [31:0] counter;
+  reg [31:0] operation;
+  reg [31:0] data;
+
+  wire [31:0] out_data;
+
+  controller main(clk, clear, enable, operation, data, out_data);
+
+  always @(posedge clk) begin
+    if(reset) begin
+      counter <= 0;
+      operation <= 0;
+      data <= 0;
+      ready <= 1;
+    end else if(enable) begin
+      if(counter == 0) begin
+        counter <= data_in;
+        operation <= 0;
+        data <= 0;
+        ready <= 1;
+      end else if(operation == 0) begin
+        operation <= data_in;
+        data <= 0;
+        ready <= data_in[3:0] == 2;
+      end else begin
+        data <= data_in;
+        counter <= counter - 1;    
+        ready <= data_in[3:0] == 2;
+      end
+      data_out <= out_data;
+      y_valid <= operation[3:0] == 3;
+    end
+  end
 
 endmodule
