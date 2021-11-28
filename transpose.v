@@ -20,10 +20,11 @@ module trans(
             v_out <= 0;
             clear_out <= 0;
         end else if(enable) begin
-            x_out<= x_in;
-            y_out<= shift ? xr : y_in;
-            v_out<= v_in;
+            x_out <= x_in;
+            y_out <= shift ? xr : y_in;
+            v_out <= v_in;
             xr <= v_in ? x_in : xr;
+            clear_out <= clear_in;
         end
     end
 endmodule
