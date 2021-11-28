@@ -49,17 +49,17 @@ wire [31:0] x_mid [7:0][7:0];
 wire [31:0] y_mid [7:0][7:0];
 wire v_mid [7:0][7:0];
 wire clear_mid [7:0][7:0];
-wire [7:0] v_in;
+reg [7:0] v_in;
 
 reg [3:0] v_count = 0;
-
-assign v_in = v_count[0] == 0 ? 8'h11 << v_count[3:1] : 0;
 
 always @(posedge clk) begin
     if(reset)begin
         v_count <= 0;
+        v_in <= 0;
     end
     else if(enable)begin
+        v_in <= v_count[0] == 0 ? 8'h11 << v_count[3:1] : 0;
         if(start)begin
             v_count <= v_count == 7 ? 0 : v_count + 1;
         end 
