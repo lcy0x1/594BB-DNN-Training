@@ -17,3 +17,5 @@ node gen.js
 ```
 
 View `dump.vcd` on EDA Playground's EPWaves
+
+Use filter to reduce data size so that EPWaves can display the entire timespan
