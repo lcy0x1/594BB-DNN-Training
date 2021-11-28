@@ -2,3 +2,8 @@ testbench/main/rf_0/.*
 testbench/main/rf_1/.*
 testbench/main/[^/]*
 testbench/main/mult/m../._in.*
+
+testbench/main/rf_0/.*
+testbench/main/rf_1/.*
+testbench/main/[^/]*
+testbench/main/tmodule/t../._in.*
