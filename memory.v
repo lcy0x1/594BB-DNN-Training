@@ -81,7 +81,7 @@ module memory(
   reg [4:0] delay_write_page_line; // delayed version of write_page_line
   reg [4:0] delay_read_page_line; // delayed version of read_page_line
   reg delay_bulk_we;
-  reg [31:0] data [2047:0]; // BRAM
+  (* ram_style = "block" *) reg [31:0] data [2047:0]; // BRAM
   reg delay_read_mode;
   
   wire [10:0] read_index = {read_page_line, read_cell}; // actual read index
