@@ -1,5 +1,6 @@
 `include "mult.v"
 `include "blockmem.v"
+`include "transpose.v"
 
 /*
 Author: Arthur Wang
@@ -162,6 +163,12 @@ module controller(
   assign zeros[5] = 0;
   assign zeros[6] = 0;
   assign zeros[7] = 0;
+
+  //transpose variables
+  wire [7:0] t_clear_out;
+  wire [31:0] t4 [7:0];
+  wire [7:0] t5;
+  wire [31:0] t_y_out [7:0];
   
   blockmem rf_0(clk, enable, reset, {re_0, en}, we_0, in_data, size, chunk_read_0, clear_in_0, chunk_write_0, y_valid, switch_0, rp_0, wp_0, out_data_0);
   blockmem rf_1(clk, enable, reset, {re_1, en}, we_1, in_data, size, chunk_read_1, clear_in_1, chunk_write_1, y_valid, switch_1, rp_1, wp_1, out_data_1);
@@ -188,6 +195,7 @@ module controller(
 
   assign clear_in = opcode == 1 ? op_a[3:2] == 0 ? clear_in_0 : op_a[3:2] == 1 ? clear_in_1 : op_a[3:2] == 2 ? clear_in_2 : clear_in_3 : 0;
 
+  t8x8 tmodule(clk, enable, reset, w_in, zeros, en, clear_in, t_clear_out, t4, t_y_out, t5, t_clear_out);
   m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, y_out, clear_out, op_d, b_out);
 
   assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
