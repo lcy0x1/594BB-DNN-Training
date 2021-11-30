@@ -7,8 +7,7 @@ Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
 Last Modified: Nov 30
 
-TODO: store b_out as output of matrix multiplication
-TODO: hadamard product with b_out during matrix multiplication
+TODO: use hadamard product
 TODO: additive update as configuration for op-code = 1
 TODO: allow non-square and non 2^N size matrix multiplication
 
@@ -30,6 +29,8 @@ op code == 1: calculate A*B'
   chunk[2] = B page number (to read)
   chunk[3] = result page number (to write in bulk)
   chunk[4] = configuration {transpose A, transpose B, use ReLU, unused}
+  chunk[5] = relu derivative target
+  chunk[6] = configuration {unused, unused, add data to memory, save hadamard product on write}
 op code == 2:
   chunk[1] = destination page number (to write in serial)
 op code == 3:
@@ -68,7 +69,13 @@ module controller(
 //   }
 // } else if(opcode == 1){
 //   if(op_c[3:2] == 0){
-//     if(op_f[0]==1){ return 4; } else { return 2; }
+//     if(op_f[0] == 1){
+//       return 4;
+//      } else if(op_f[1] == 1){
+//        return 3;
+//      } else {
+//        return 2;
+//      }
 //   } else if(op_e[3:2] == 0){
 //     return 2;
 //   } else {
@@ -79,10 +86,10 @@ module controller(
 // }
 
 
-  wire [2:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 0 ? op_f[0]? 4 : 2 : op_e[3:2] == 0 ? 2 : 0 : 0;
-  wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 1 ? op_f[0]? 4 : 2 : op_e[3:2] == 1 ? 2 : 0 : 0;
-  wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 2 ? op_f[0]? 4 : 2 : op_e[3:2] == 2 ? 2 : 0 : 0;
-  wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 3 ? op_f[0]? 4 : 2 : op_e[3:2] == 3 ? 2 : 0 : 0;
+  wire [2:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 0 ? op_f[0]? 4 : op_f[1]? 3 : 2 : op_e[3:2] == 0 ? 2 : 0 : 0;
+  wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 1 ? op_f[0]? 4 : op_f[1]? 3 : 2 : op_e[3:2] == 1 ? 2 : 0 : 0;
+  wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 2 ? op_f[0]? 4 : op_f[1]? 3 : 2 : op_e[3:2] == 2 ? 2 : 0 : 0;
+  wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 3 ? op_f[0]? 4 : op_f[1]? 3 : 2 : op_e[3:2] == 3 ? 2 : 0 : 0;
 
   // write address for register file
   wire [1:0] wp_0 = opcode == 1 ? op_c[3:2] == 0 ? op_c[1:0] : op_e[3:2] == 0 ? op_e[1:0] : 0 : opcode == 2 ? op_a[3:2] == 0 ? op_a[1:0] : 0 : 0;
@@ -152,20 +159,6 @@ module controller(
   
   wire w_switch, x_switch;
   
-  // empty wires as placeholder for unused ports
-  wire [7:0] t0;
-  wire [31:0] t2 [7:0];
-  wire [31:0] t3 [7:0];
-  wire [31:0] zeros [7:0];
-  assign zeros[0] = 0;
-  assign zeros[1] = 0;
-  assign zeros[2] = 0;
-  assign zeros[3] = 0;
-  assign zeros[4] = 0;
-  assign zeros[5] = 0;
-  assign zeros[6] = 0;
-  assign zeros[7] = 0;
-
   //transpose variables
   wire [7:0] t_clear_out;
   wire [31:0] t4 [7:0];
