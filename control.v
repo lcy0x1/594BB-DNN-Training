@@ -171,6 +171,8 @@ module controller(
   wire [31:0] t4 [7:0];
   wire [7:0] t5;
   wire [31:0] t_y_out [7:0];
+  wire [31:0] x_delay_out [7:0];
+  wire temp = 1;
   
   blockmem rf_0(clk, enable, reset, {re_0, en}, we_0, in_data, size, chunk_read_0, clear_in_0, chunk_write_0, y_valid, switch_0, rp_0, wp_0, out_data_0);
   blockmem rf_1(clk, enable, reset, {re_1, en}, we_1, in_data, size, chunk_read_1, clear_in_1, chunk_write_1, y_valid, switch_1, rp_1, wp_1, out_data_1);
@@ -193,12 +195,13 @@ module controller(
   wire tx_switch = transpose ? w_switch : x_switch;
   wire tw_switch = transpose ? x_switch : w_switch;
 
+
   assign switch_1 = opcode == 1 ? op_a[3:2] == 1 ? tx_switch : op_b[3:2] == 1 ? tw_switch : 0 : 0;
   assign switch_2 = opcode == 1 ? op_a[3:2] == 2 ? tx_switch : op_b[3:2] == 2 ? tw_switch : 0 : 0;
   assign switch_0 = opcode == 1 ? op_a[3:2] == 0 ? tx_switch : op_b[3:2] == 0 ? tw_switch : 0 : 0;
   assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? tx_switch : op_b[3:2] == 3 ? tw_switch : 0 : 0;
 
-  t8x8 tmodule(clk, enable, reset, w_in, zeros, en, clear_in_0, t_clear_out, t4, t_y_out, t5, t_clear_out);
+  t8x8 tmodule(clk, enable, reset, 1'b1,  w_in, zeros, en, t_y_out, clear_in_0, t_clear_out);
 
   m8x8 mult(w_in, x_in, zeros, transpose ? clear_in_1 : clear_in_0, enable, clear_out, clk, reset, t2, t3, y_out, clear_out, op_d, b_out);
 
