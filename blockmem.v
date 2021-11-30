@@ -51,7 +51,7 @@ Read Mode:
 0: idle
 1: bulk read. It should be one for the entire span of reading process.
 2: serial read.
-3: transposed bulk read
+3: transposed read
 
 Addressing:
 size[5:0] tells the number of data per line
@@ -123,7 +123,7 @@ module blockmem(
         // increase the line index <waddr> on finishing a line, all slices are written together
         waddr <= lw[0] ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
       end
-      if(read_mode == 1) begin
+      if(read_mode[0] == 1) begin
         // read address increment by 1 when <switch> is on
         raddr <= switch ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
       end else begin

@@ -1063,16 +1063,16 @@ in_data = 0;
 in_data = 0;
 #(CLK);
 
-    mode = 32'h8a1401;
-    #(CLK*96);
+    mode = 32'h0a1401;
+    #(CLK*128);
     mode = 0;
     #(CLK);
     mode = 32'ha2411;
-    #(CLK*96);
+    #(CLK*128);
     mode = 32'h0023;
     #(CLK*256);
     mode = 32'h0;
-    #(CLK*25);
+    #(CLK*128);
     
     $finish;
   end
