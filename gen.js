@@ -27,7 +27,7 @@ str0 += `mode = 32'h0102;\n`;
 for (let i1 = 0; i1 < 2; i1++) {
     for (let i0 = 0; i0 < 8; i0++) {
         for (let j = 0; j < 16; j++) {
-            str0 += `in_data = ${x_arr[j][i1 * 8 + i0]};\n`;
+            str0 += `in_data = ${x_arr[i1 * 8 + i0][j]};\n`;
             str0 += '#(CLK);\n';
         }
     }

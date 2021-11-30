@@ -79,26 +79,37 @@ module mac(
 endmodule
 
 module m8x8(
-  input [31:0] w_in [7:0],
-  input [31:0] x_in [7:0],
-  input [31:0] y_in [7:0],
-  input [7:0] clear_in,
-  input enable,
-  input [7:0] shift,
   input clk,
   input reset,
+  input enable,
+  input en,
+  input [3:0] conf,
+  input [31:0] win_raw [7:0],
+  input [31:0] xin_raw [7:0],
+  input [7:0] clear_in_raw,
   output [31:0] z_out [7:0],
   output [7:0] clear_out,
-  input [3:0] conf,
   output [7:0] b_out
 );
+
+  wire relu = conf[1];
+  wire wt = conf[2];
+  wire xt = conf[3];
+
+  wire [7:0] temp_0;
+
+
+  wire [31:0] win_raw [7:0];
+  wire [31:0] xin_raw [7:0];
+
+  t8x8 transx(clk, enable, reset, wt,  win_raw, en, w_in, clear_in_raw, clear_in);
+  t8x8 transw(clk, enable, reset, xt,  xin_raw, en, x_in, clear_in_raw, temp_0);
   
   wire [31:0] w_mid [6:0][7:0];
   wire [31:0] x_mid [7:0][6:0];
   wire [31:0] y_mid [7:0][6:0];
   wire clear_mid [7:0][6:0];
 
-  wire relu = conf[1];
 
   wire [31:0] y_out[7:0];
   wire [31:0] a_out[7:0];
@@ -129,76 +140,76 @@ module m8x8(
   // left: x_in, y_out, clear_in
   // right: x_out, y_in, clear_out, shift
   
-  mac m00(w_in[0]    , x_in[0], y_mid[0][0], clear_in[0], enable, shift[0], clk, reset, w_mid[0][0], x_mid[0][0], y_out[0], clear_mid[0][0]);
-  mac m10(w_mid[0][0], x_in[1], y_mid[1][0], clear_in[1], enable, shift[1], clk, reset, w_mid[1][0], x_mid[1][0], y_out[1], clear_mid[1][0]);
-  mac m20(w_mid[1][0], x_in[2], y_mid[2][0], clear_in[2], enable, shift[2], clk, reset, w_mid[2][0], x_mid[2][0], y_out[2], clear_mid[2][0]);
-  mac m30(w_mid[2][0], x_in[3], y_mid[3][0], clear_in[3], enable, shift[3], clk, reset, w_mid[3][0], x_mid[3][0], y_out[3], clear_mid[3][0]);
-  mac m40(w_mid[3][0], x_in[4], y_mid[4][0], clear_in[4], enable, shift[4], clk, reset, w_mid[4][0], x_mid[4][0], y_out[4], clear_mid[4][0]);
-  mac m50(w_mid[4][0], x_in[5], y_mid[5][0], clear_in[5], enable, shift[5], clk, reset, w_mid[5][0], x_mid[5][0], y_out[5], clear_mid[5][0]);
-  mac m60(w_mid[5][0], x_in[6], y_mid[6][0], clear_in[6], enable, shift[6], clk, reset, w_mid[6][0], x_mid[6][0], y_out[6], clear_mid[6][0]);
-  mac m70(w_mid[6][0], x_in[7], y_mid[7][0], clear_in[7], enable, shift[7], clk, reset, w_out[0],    x_mid[7][0], y_out[7], clear_mid[7][0]);
+  mac m00(w_in[0]    , x_in[0], y_mid[0][0], clear_in[0], enable, clear_out[0], clk, reset, w_mid[0][0], x_mid[0][0], y_out[0], clear_mid[0][0]);
+  mac m10(w_mid[0][0], x_in[1], y_mid[1][0], clear_in[1], enable, clear_out[1], clk, reset, w_mid[1][0], x_mid[1][0], y_out[1], clear_mid[1][0]);
+  mac m20(w_mid[1][0], x_in[2], y_mid[2][0], clear_in[2], enable, clear_out[2], clk, reset, w_mid[2][0], x_mid[2][0], y_out[2], clear_mid[2][0]);
+  mac m30(w_mid[2][0], x_in[3], y_mid[3][0], clear_in[3], enable, clear_out[3], clk, reset, w_mid[3][0], x_mid[3][0], y_out[3], clear_mid[3][0]);
+  mac m40(w_mid[3][0], x_in[4], y_mid[4][0], clear_in[4], enable, clear_out[4], clk, reset, w_mid[4][0], x_mid[4][0], y_out[4], clear_mid[4][0]);
+  mac m50(w_mid[4][0], x_in[5], y_mid[5][0], clear_in[5], enable, clear_out[5], clk, reset, w_mid[5][0], x_mid[5][0], y_out[5], clear_mid[5][0]);
+  mac m60(w_mid[5][0], x_in[6], y_mid[6][0], clear_in[6], enable, clear_out[6], clk, reset, w_mid[6][0], x_mid[6][0], y_out[6], clear_mid[6][0]);
+  mac m70(w_mid[6][0], x_in[7], y_mid[7][0], clear_in[7], enable, clear_out[7], clk, reset, w_out[0],    x_mid[7][0], y_out[7], clear_mid[7][0]);
   
-  mac m01(w_in[1]    , x_mid[0][0], y_mid[0][1], clear_mid[0][0], enable, shift[0], clk, reset, w_mid[0][1], x_mid[0][1], y_mid[0][0], clear_mid[0][1]);
-  mac m11(w_mid[0][1], x_mid[1][0], y_mid[1][1], clear_mid[1][0], enable, shift[1], clk, reset, w_mid[1][1], x_mid[1][1], y_mid[1][0], clear_mid[1][1]);
-  mac m21(w_mid[1][1], x_mid[2][0], y_mid[2][1], clear_mid[2][0], enable, shift[2], clk, reset, w_mid[2][1], x_mid[2][1], y_mid[2][0], clear_mid[2][1]);
-  mac m31(w_mid[2][1], x_mid[3][0], y_mid[3][1], clear_mid[3][0], enable, shift[3], clk, reset, w_mid[3][1], x_mid[3][1], y_mid[3][0], clear_mid[3][1]);
-  mac m41(w_mid[3][1], x_mid[4][0], y_mid[4][1], clear_mid[4][0], enable, shift[4], clk, reset, w_mid[4][1], x_mid[4][1], y_mid[4][0], clear_mid[4][1]);
-  mac m51(w_mid[4][1], x_mid[5][0], y_mid[5][1], clear_mid[5][0], enable, shift[5], clk, reset, w_mid[5][1], x_mid[5][1], y_mid[5][0], clear_mid[5][1]);
-  mac m61(w_mid[5][1], x_mid[6][0], y_mid[6][1], clear_mid[6][0], enable, shift[6], clk, reset, w_mid[6][1], x_mid[6][1], y_mid[6][0], clear_mid[6][1]);
-  mac m71(w_mid[6][1], x_mid[7][0], y_mid[7][1], clear_mid[7][0], enable, shift[7], clk, reset,    w_out[1], x_mid[7][1], y_mid[7][0], clear_mid[7][1]);
+  mac m01(w_in[1]    , x_mid[0][0], y_mid[0][1], clear_mid[0][0], enable, clear_out[0], clk, reset, w_mid[0][1], x_mid[0][1], y_mid[0][0], clear_mid[0][1]);
+  mac m11(w_mid[0][1], x_mid[1][0], y_mid[1][1], clear_mid[1][0], enable, clear_out[1], clk, reset, w_mid[1][1], x_mid[1][1], y_mid[1][0], clear_mid[1][1]);
+  mac m21(w_mid[1][1], x_mid[2][0], y_mid[2][1], clear_mid[2][0], enable, clear_out[2], clk, reset, w_mid[2][1], x_mid[2][1], y_mid[2][0], clear_mid[2][1]);
+  mac m31(w_mid[2][1], x_mid[3][0], y_mid[3][1], clear_mid[3][0], enable, clear_out[3], clk, reset, w_mid[3][1], x_mid[3][1], y_mid[3][0], clear_mid[3][1]);
+  mac m41(w_mid[3][1], x_mid[4][0], y_mid[4][1], clear_mid[4][0], enable, clear_out[4], clk, reset, w_mid[4][1], x_mid[4][1], y_mid[4][0], clear_mid[4][1]);
+  mac m51(w_mid[4][1], x_mid[5][0], y_mid[5][1], clear_mid[5][0], enable, clear_out[5], clk, reset, w_mid[5][1], x_mid[5][1], y_mid[5][0], clear_mid[5][1]);
+  mac m61(w_mid[5][1], x_mid[6][0], y_mid[6][1], clear_mid[6][0], enable, clear_out[6], clk, reset, w_mid[6][1], x_mid[6][1], y_mid[6][0], clear_mid[6][1]);
+  mac m71(w_mid[6][1], x_mid[7][0], y_mid[7][1], clear_mid[7][0], enable, clear_out[7], clk, reset,    w_out[1], x_mid[7][1], y_mid[7][0], clear_mid[7][1]);
   
-  mac m02(w_in[2]    , x_mid[0][1], y_mid[0][2], clear_mid[0][1], enable, shift[0], clk, reset, w_mid[0][2], x_mid[0][2], y_mid[0][1], clear_mid[0][2]);
-  mac m12(w_mid[0][2], x_mid[1][1], y_mid[1][2], clear_mid[1][1], enable, shift[1], clk, reset, w_mid[1][2], x_mid[1][2], y_mid[1][1], clear_mid[1][2]);
-  mac m22(w_mid[1][2], x_mid[2][1], y_mid[2][2], clear_mid[2][1], enable, shift[2], clk, reset, w_mid[2][2], x_mid[2][2], y_mid[2][1], clear_mid[2][2]);
-  mac m32(w_mid[2][2], x_mid[3][1], y_mid[3][2], clear_mid[3][1], enable, shift[3], clk, reset, w_mid[3][2], x_mid[3][2], y_mid[3][1], clear_mid[3][2]);
-  mac m42(w_mid[3][2], x_mid[4][1], y_mid[4][2], clear_mid[4][1], enable, shift[4], clk, reset, w_mid[4][2], x_mid[4][2], y_mid[4][1], clear_mid[4][2]);
-  mac m52(w_mid[4][2], x_mid[5][1], y_mid[5][2], clear_mid[5][1], enable, shift[5], clk, reset, w_mid[5][2], x_mid[5][2], y_mid[5][1], clear_mid[5][2]);
-  mac m62(w_mid[5][2], x_mid[6][1], y_mid[6][2], clear_mid[6][1], enable, shift[6], clk, reset, w_mid[6][2], x_mid[6][2], y_mid[6][1], clear_mid[6][2]);
-  mac m72(w_mid[6][2], x_mid[7][1], y_mid[7][2], clear_mid[7][1], enable, shift[7], clk, reset,    w_out[2], x_mid[7][2], y_mid[7][1], clear_mid[7][2]);
+  mac m02(w_in[2]    , x_mid[0][1], y_mid[0][2], clear_mid[0][1], enable, clear_out[0], clk, reset, w_mid[0][2], x_mid[0][2], y_mid[0][1], clear_mid[0][2]);
+  mac m12(w_mid[0][2], x_mid[1][1], y_mid[1][2], clear_mid[1][1], enable, clear_out[1], clk, reset, w_mid[1][2], x_mid[1][2], y_mid[1][1], clear_mid[1][2]);
+  mac m22(w_mid[1][2], x_mid[2][1], y_mid[2][2], clear_mid[2][1], enable, clear_out[2], clk, reset, w_mid[2][2], x_mid[2][2], y_mid[2][1], clear_mid[2][2]);
+  mac m32(w_mid[2][2], x_mid[3][1], y_mid[3][2], clear_mid[3][1], enable, clear_out[3], clk, reset, w_mid[3][2], x_mid[3][2], y_mid[3][1], clear_mid[3][2]);
+  mac m42(w_mid[3][2], x_mid[4][1], y_mid[4][2], clear_mid[4][1], enable, clear_out[4], clk, reset, w_mid[4][2], x_mid[4][2], y_mid[4][1], clear_mid[4][2]);
+  mac m52(w_mid[4][2], x_mid[5][1], y_mid[5][2], clear_mid[5][1], enable, clear_out[5], clk, reset, w_mid[5][2], x_mid[5][2], y_mid[5][1], clear_mid[5][2]);
+  mac m62(w_mid[5][2], x_mid[6][1], y_mid[6][2], clear_mid[6][1], enable, clear_out[6], clk, reset, w_mid[6][2], x_mid[6][2], y_mid[6][1], clear_mid[6][2]);
+  mac m72(w_mid[6][2], x_mid[7][1], y_mid[7][2], clear_mid[7][1], enable, clear_out[7], clk, reset,    w_out[2], x_mid[7][2], y_mid[7][1], clear_mid[7][2]);
   
-  mac m03(w_in[3]    , x_mid[0][2], y_mid[0][3], clear_mid[0][2], enable, shift[0], clk, reset, w_mid[0][3], x_mid[0][3], y_mid[0][2], clear_mid[0][3]);
-  mac m13(w_mid[0][3], x_mid[1][2], y_mid[1][3], clear_mid[1][2], enable, shift[1], clk, reset, w_mid[1][3], x_mid[1][3], y_mid[1][2], clear_mid[1][3]);
-  mac m23(w_mid[1][3], x_mid[2][2], y_mid[2][3], clear_mid[2][2], enable, shift[2], clk, reset, w_mid[2][3], x_mid[2][3], y_mid[2][2], clear_mid[2][3]);
-  mac m33(w_mid[2][3], x_mid[3][2], y_mid[3][3], clear_mid[3][2], enable, shift[3], clk, reset, w_mid[3][3], x_mid[3][3], y_mid[3][2], clear_mid[3][3]);
-  mac m43(w_mid[3][3], x_mid[4][2], y_mid[4][3], clear_mid[4][2], enable, shift[4], clk, reset, w_mid[4][3], x_mid[4][3], y_mid[4][2], clear_mid[4][3]);
-  mac m53(w_mid[4][3], x_mid[5][2], y_mid[5][3], clear_mid[5][2], enable, shift[5], clk, reset, w_mid[5][3], x_mid[5][3], y_mid[5][2], clear_mid[5][3]);
-  mac m63(w_mid[5][3], x_mid[6][2], y_mid[6][3], clear_mid[6][2], enable, shift[6], clk, reset, w_mid[6][3], x_mid[6][3], y_mid[6][2], clear_mid[6][3]);
-  mac m73(w_mid[6][3], x_mid[7][2], y_mid[7][3], clear_mid[7][2], enable, shift[7], clk, reset,    w_out[3], x_mid[7][3], y_mid[7][2], clear_mid[7][3]);
+  mac m03(w_in[3]    , x_mid[0][2], y_mid[0][3], clear_mid[0][2], enable, clear_out[0], clk, reset, w_mid[0][3], x_mid[0][3], y_mid[0][2], clear_mid[0][3]);
+  mac m13(w_mid[0][3], x_mid[1][2], y_mid[1][3], clear_mid[1][2], enable, clear_out[1], clk, reset, w_mid[1][3], x_mid[1][3], y_mid[1][2], clear_mid[1][3]);
+  mac m23(w_mid[1][3], x_mid[2][2], y_mid[2][3], clear_mid[2][2], enable, clear_out[2], clk, reset, w_mid[2][3], x_mid[2][3], y_mid[2][2], clear_mid[2][3]);
+  mac m33(w_mid[2][3], x_mid[3][2], y_mid[3][3], clear_mid[3][2], enable, clear_out[3], clk, reset, w_mid[3][3], x_mid[3][3], y_mid[3][2], clear_mid[3][3]);
+  mac m43(w_mid[3][3], x_mid[4][2], y_mid[4][3], clear_mid[4][2], enable, clear_out[4], clk, reset, w_mid[4][3], x_mid[4][3], y_mid[4][2], clear_mid[4][3]);
+  mac m53(w_mid[4][3], x_mid[5][2], y_mid[5][3], clear_mid[5][2], enable, clear_out[5], clk, reset, w_mid[5][3], x_mid[5][3], y_mid[5][2], clear_mid[5][3]);
+  mac m63(w_mid[5][3], x_mid[6][2], y_mid[6][3], clear_mid[6][2], enable, clear_out[6], clk, reset, w_mid[6][3], x_mid[6][3], y_mid[6][2], clear_mid[6][3]);
+  mac m73(w_mid[6][3], x_mid[7][2], y_mid[7][3], clear_mid[7][2], enable, clear_out[7], clk, reset,    w_out[3], x_mid[7][3], y_mid[7][2], clear_mid[7][3]);
 
-  mac m04(w_in[4]    , x_mid[0][3], y_mid[0][4], clear_mid[0][3], enable, shift[0], clk, reset, w_mid[0][4], x_mid[0][4], y_mid[0][3], clear_mid[0][4]);
-  mac m14(w_mid[0][4], x_mid[1][3], y_mid[1][4], clear_mid[1][3], enable, shift[1], clk, reset, w_mid[1][4], x_mid[1][4], y_mid[1][3], clear_mid[1][4]);
-  mac m24(w_mid[1][4], x_mid[2][3], y_mid[2][4], clear_mid[2][3], enable, shift[2], clk, reset, w_mid[2][4], x_mid[2][4], y_mid[2][3], clear_mid[2][4]);
-  mac m34(w_mid[2][4], x_mid[3][3], y_mid[3][4], clear_mid[3][3], enable, shift[3], clk, reset, w_mid[3][4], x_mid[3][4], y_mid[3][3], clear_mid[3][4]);
-  mac m44(w_mid[3][4], x_mid[4][3], y_mid[4][4], clear_mid[4][3], enable, shift[4], clk, reset, w_mid[4][4], x_mid[4][4], y_mid[4][3], clear_mid[4][4]);
-  mac m54(w_mid[4][4], x_mid[5][3], y_mid[5][4], clear_mid[5][3], enable, shift[5], clk, reset, w_mid[5][4], x_mid[5][4], y_mid[5][3], clear_mid[5][4]);
-  mac m64(w_mid[5][4], x_mid[6][3], y_mid[6][4], clear_mid[6][3], enable, shift[6], clk, reset, w_mid[6][4], x_mid[6][4], y_mid[6][3], clear_mid[6][4]);
-  mac m74(w_mid[6][4], x_mid[7][3], y_mid[7][4], clear_mid[7][3], enable, shift[7], clk, reset,    w_out[4], x_mid[7][4], y_mid[7][3], clear_mid[7][4]);
+  mac m04(w_in[4]    , x_mid[0][3], y_mid[0][4], clear_mid[0][3], enable, clear_out[0], clk, reset, w_mid[0][4], x_mid[0][4], y_mid[0][3], clear_mid[0][4]);
+  mac m14(w_mid[0][4], x_mid[1][3], y_mid[1][4], clear_mid[1][3], enable, clear_out[1], clk, reset, w_mid[1][4], x_mid[1][4], y_mid[1][3], clear_mid[1][4]);
+  mac m24(w_mid[1][4], x_mid[2][3], y_mid[2][4], clear_mid[2][3], enable, clear_out[2], clk, reset, w_mid[2][4], x_mid[2][4], y_mid[2][3], clear_mid[2][4]);
+  mac m34(w_mid[2][4], x_mid[3][3], y_mid[3][4], clear_mid[3][3], enable, clear_out[3], clk, reset, w_mid[3][4], x_mid[3][4], y_mid[3][3], clear_mid[3][4]);
+  mac m44(w_mid[3][4], x_mid[4][3], y_mid[4][4], clear_mid[4][3], enable, clear_out[4], clk, reset, w_mid[4][4], x_mid[4][4], y_mid[4][3], clear_mid[4][4]);
+  mac m54(w_mid[4][4], x_mid[5][3], y_mid[5][4], clear_mid[5][3], enable, clear_out[5], clk, reset, w_mid[5][4], x_mid[5][4], y_mid[5][3], clear_mid[5][4]);
+  mac m64(w_mid[5][4], x_mid[6][3], y_mid[6][4], clear_mid[6][3], enable, clear_out[6], clk, reset, w_mid[6][4], x_mid[6][4], y_mid[6][3], clear_mid[6][4]);
+  mac m74(w_mid[6][4], x_mid[7][3], y_mid[7][4], clear_mid[7][3], enable, clear_out[7], clk, reset,    w_out[4], x_mid[7][4], y_mid[7][3], clear_mid[7][4]);
 
-  mac m05(w_in[5]    , x_mid[0][4], y_mid[0][5], clear_mid[0][4], enable, shift[0], clk, reset, w_mid[0][5], x_mid[0][5], y_mid[0][4], clear_mid[0][5]);
-  mac m15(w_mid[0][5], x_mid[1][4], y_mid[1][5], clear_mid[1][4], enable, shift[1], clk, reset, w_mid[1][5], x_mid[1][5], y_mid[1][4], clear_mid[1][5]);
-  mac m25(w_mid[1][5], x_mid[2][4], y_mid[2][5], clear_mid[2][4], enable, shift[2], clk, reset, w_mid[2][5], x_mid[2][5], y_mid[2][4], clear_mid[2][5]);
-  mac m35(w_mid[2][5], x_mid[3][4], y_mid[3][5], clear_mid[3][4], enable, shift[3], clk, reset, w_mid[3][5], x_mid[3][5], y_mid[3][4], clear_mid[3][5]);
-  mac m45(w_mid[3][5], x_mid[4][4], y_mid[4][5], clear_mid[4][4], enable, shift[4], clk, reset, w_mid[4][5], x_mid[4][5], y_mid[4][4], clear_mid[4][5]);
-  mac m55(w_mid[4][5], x_mid[5][4], y_mid[5][5], clear_mid[5][4], enable, shift[5], clk, reset, w_mid[5][5], x_mid[5][5], y_mid[5][4], clear_mid[5][5]);
-  mac m65(w_mid[5][5], x_mid[6][4], y_mid[6][5], clear_mid[6][4], enable, shift[6], clk, reset, w_mid[6][5], x_mid[6][5], y_mid[6][4], clear_mid[6][5]);
-  mac m75(w_mid[6][5], x_mid[7][4], y_mid[7][5], clear_mid[7][4], enable, shift[7], clk, reset,    w_out[5], x_mid[7][5], y_mid[7][4], clear_mid[7][5]);
+  mac m05(w_in[5]    , x_mid[0][4], y_mid[0][5], clear_mid[0][4], enable, clear_out[0], clk, reset, w_mid[0][5], x_mid[0][5], y_mid[0][4], clear_mid[0][5]);
+  mac m15(w_mid[0][5], x_mid[1][4], y_mid[1][5], clear_mid[1][4], enable, clear_out[1], clk, reset, w_mid[1][5], x_mid[1][5], y_mid[1][4], clear_mid[1][5]);
+  mac m25(w_mid[1][5], x_mid[2][4], y_mid[2][5], clear_mid[2][4], enable, clear_out[2], clk, reset, w_mid[2][5], x_mid[2][5], y_mid[2][4], clear_mid[2][5]);
+  mac m35(w_mid[2][5], x_mid[3][4], y_mid[3][5], clear_mid[3][4], enable, clear_out[3], clk, reset, w_mid[3][5], x_mid[3][5], y_mid[3][4], clear_mid[3][5]);
+  mac m45(w_mid[3][5], x_mid[4][4], y_mid[4][5], clear_mid[4][4], enable, clear_out[4], clk, reset, w_mid[4][5], x_mid[4][5], y_mid[4][4], clear_mid[4][5]);
+  mac m55(w_mid[4][5], x_mid[5][4], y_mid[5][5], clear_mid[5][4], enable, clear_out[5], clk, reset, w_mid[5][5], x_mid[5][5], y_mid[5][4], clear_mid[5][5]);
+  mac m65(w_mid[5][5], x_mid[6][4], y_mid[6][5], clear_mid[6][4], enable, clear_out[6], clk, reset, w_mid[6][5], x_mid[6][5], y_mid[6][4], clear_mid[6][5]);
+  mac m75(w_mid[6][5], x_mid[7][4], y_mid[7][5], clear_mid[7][4], enable, clear_out[7], clk, reset,    w_out[5], x_mid[7][5], y_mid[7][4], clear_mid[7][5]);
     
-  mac m06(w_in[6]    , x_mid[0][5], y_mid[0][6], clear_mid[0][5], enable, shift[0], clk, reset, w_mid[0][6], x_mid[0][6], y_mid[0][5], clear_mid[0][6]);
-  mac m16(w_mid[0][6], x_mid[1][5], y_mid[1][6], clear_mid[1][5], enable, shift[1], clk, reset, w_mid[1][6], x_mid[1][6], y_mid[1][5], clear_mid[1][6]);
-  mac m26(w_mid[1][6], x_mid[2][5], y_mid[2][6], clear_mid[2][5], enable, shift[2], clk, reset, w_mid[2][6], x_mid[2][6], y_mid[2][5], clear_mid[2][6]);
-  mac m36(w_mid[2][6], x_mid[3][5], y_mid[3][6], clear_mid[3][5], enable, shift[3], clk, reset, w_mid[3][6], x_mid[3][6], y_mid[3][5], clear_mid[3][6]);
-  mac m46(w_mid[3][6], x_mid[4][5], y_mid[4][6], clear_mid[4][5], enable, shift[4], clk, reset, w_mid[4][6], x_mid[4][6], y_mid[4][5], clear_mid[4][6]);
-  mac m56(w_mid[4][6], x_mid[5][5], y_mid[5][6], clear_mid[5][5], enable, shift[5], clk, reset, w_mid[5][6], x_mid[5][6], y_mid[5][5], clear_mid[5][6]);
-  mac m66(w_mid[5][6], x_mid[6][5], y_mid[6][6], clear_mid[6][5], enable, shift[6], clk, reset, w_mid[6][6], x_mid[6][6], y_mid[6][5], clear_mid[6][6]);
-  mac m76(w_mid[6][6], x_mid[7][5], y_mid[7][6], clear_mid[7][5], enable, shift[7], clk, reset,    w_out[6], x_mid[7][6], y_mid[7][5], clear_mid[7][6]);
+  mac m06(w_in[6]    , x_mid[0][5], y_mid[0][6], clear_mid[0][5], enable, clear_out[0], clk, reset, w_mid[0][6], x_mid[0][6], y_mid[0][5], clear_mid[0][6]);
+  mac m16(w_mid[0][6], x_mid[1][5], y_mid[1][6], clear_mid[1][5], enable, clear_out[1], clk, reset, w_mid[1][6], x_mid[1][6], y_mid[1][5], clear_mid[1][6]);
+  mac m26(w_mid[1][6], x_mid[2][5], y_mid[2][6], clear_mid[2][5], enable, clear_out[2], clk, reset, w_mid[2][6], x_mid[2][6], y_mid[2][5], clear_mid[2][6]);
+  mac m36(w_mid[2][6], x_mid[3][5], y_mid[3][6], clear_mid[3][5], enable, clear_out[3], clk, reset, w_mid[3][6], x_mid[3][6], y_mid[3][5], clear_mid[3][6]);
+  mac m46(w_mid[3][6], x_mid[4][5], y_mid[4][6], clear_mid[4][5], enable, clear_out[4], clk, reset, w_mid[4][6], x_mid[4][6], y_mid[4][5], clear_mid[4][6]);
+  mac m56(w_mid[4][6], x_mid[5][5], y_mid[5][6], clear_mid[5][5], enable, clear_out[5], clk, reset, w_mid[5][6], x_mid[5][6], y_mid[5][5], clear_mid[5][6]);
+  mac m66(w_mid[5][6], x_mid[6][5], y_mid[6][6], clear_mid[6][5], enable, clear_out[6], clk, reset, w_mid[6][6], x_mid[6][6], y_mid[6][5], clear_mid[6][6]);
+  mac m76(w_mid[6][6], x_mid[7][5], y_mid[7][6], clear_mid[7][5], enable, clear_out[7], clk, reset,    w_out[6], x_mid[7][6], y_mid[7][5], clear_mid[7][6]);
   
-  mac m07(w_in[7]    , x_mid[0][6], 32'b0, clear_mid[0][6], enable, shift[0], clk, reset, w_mid[0][7], x_out[0], y_mid[0][6], clear_out[0]);
-  mac m17(w_mid[0][7], x_mid[1][6], 32'b0, clear_mid[1][6], enable, shift[1], clk, reset, w_mid[1][7], x_out[1], y_mid[1][6], clear_out[1]);
-  mac m27(w_mid[1][7], x_mid[2][6], 32'b0, clear_mid[2][6], enable, shift[2], clk, reset, w_mid[2][7], x_out[2], y_mid[2][6], clear_out[2]);
-  mac m37(w_mid[2][7], x_mid[3][6], 32'b0, clear_mid[3][6], enable, shift[3], clk, reset, w_mid[3][7], x_out[3], y_mid[3][6], clear_out[3]);
-  mac m47(w_mid[3][7], x_mid[4][6], 32'b0, clear_mid[4][6], enable, shift[4], clk, reset, w_mid[4][7], x_out[4], y_mid[4][6], clear_out[4]);
-  mac m57(w_mid[4][7], x_mid[5][6], 32'b0, clear_mid[5][6], enable, shift[5], clk, reset, w_mid[5][7], x_out[5], y_mid[5][6], clear_out[5]);
-  mac m67(w_mid[5][7], x_mid[6][6], 32'b0, clear_mid[6][6], enable, shift[6], clk, reset, w_mid[6][7], x_out[6], y_mid[6][6], clear_out[6]);
-  mac m77(w_mid[6][7], x_mid[7][6], 32'b0, clear_mid[7][6], enable, shift[7], clk, reset,    w_out[7], x_out[7], y_mid[7][6], clear_out[7]);
+  mac m07(w_in[7]    , x_mid[0][6], 32'b0, clear_mid[0][6], enable, clear_out[0], clk, reset, w_mid[0][7], x_out[0], y_mid[0][6], clear_out[0]);
+  mac m17(w_mid[0][7], x_mid[1][6], 32'b0, clear_mid[1][6], enable, clear_out[1], clk, reset, w_mid[1][7], x_out[1], y_mid[1][6], clear_out[1]);
+  mac m27(w_mid[1][7], x_mid[2][6], 32'b0, clear_mid[2][6], enable, clear_out[2], clk, reset, w_mid[2][7], x_out[2], y_mid[2][6], clear_out[2]);
+  mac m37(w_mid[2][7], x_mid[3][6], 32'b0, clear_mid[3][6], enable, clear_out[3], clk, reset, w_mid[3][7], x_out[3], y_mid[3][6], clear_out[3]);
+  mac m47(w_mid[3][7], x_mid[4][6], 32'b0, clear_mid[4][6], enable, clear_out[4], clk, reset, w_mid[4][7], x_out[4], y_mid[4][6], clear_out[4]);
+  mac m57(w_mid[4][7], x_mid[5][6], 32'b0, clear_mid[5][6], enable, clear_out[5], clk, reset, w_mid[5][7], x_out[5], y_mid[5][6], clear_out[5]);
+  mac m67(w_mid[5][7], x_mid[6][6], 32'b0, clear_mid[6][6], enable, clear_out[6], clk, reset, w_mid[6][7], x_out[6], y_mid[6][6], clear_out[6]);
+  mac m77(w_mid[6][7], x_mid[7][6], 32'b0, clear_mid[7][6], enable, clear_out[7], clk, reset,    w_out[7], x_out[7], y_mid[7][6], clear_out[7]);
   
 endmodule

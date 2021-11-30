@@ -196,10 +196,8 @@ module controller(
   assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? x_switch : op_b[3:2] == 3 ? w_switch : 0 : 0;
 
   assign clear_in = opcode == 1 ? op_a[3:2] == 0 ? clear_in_0 : op_a[3:2] == 1 ? clear_in_1 : op_a[3:2] == 2 ? clear_in_2 : clear_in_3 : 0;
-
-  t8x8 tmodule(clk, enable, reset, 1'b1,  w_in, zeros, en, t_y_out, clear_in, t_clear_out);
-  
-  m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, y_out, clear_out, op_d, b_out);
+ 
+  m8x8 mult(clk, reset, enable, en, op_d, w_in, x_in, clear_in, y_out, clear_out, b_out);
 
   assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
 
