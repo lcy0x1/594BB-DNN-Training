@@ -3,9 +3,9 @@
 `include "transpose.v"
 
 /*
-Author: Arthur Wang
+Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 19
+Last Modified: Nov 29
 
 TODO: store b_out as output of matrix multiplication
 TODO: hadamard product with b_out during matrix multiplication

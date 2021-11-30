@@ -1,3 +1,24 @@
+/*
+
+Author: Jiachen Zhang, Arthur Wang
+Creation Date: Nov 23 
+Last Modified: Nov 29
+
+module trans: similar to mac, but for transpose
+module t8x8: 8 by 8 matrix transpose module
+
+->  clk: clock
+->  enable: global enable, nothing shall be done if it is low
+->  reset: reset everything
+->  do_transpose: enable for transpose. If low, output delayed input
+->  x_in: input to be transposed
+->  start: signals for the starting point
+->  z_out: the output, transposed or not
+->  in_mult_clear: the clear_out flag provided by the memory
+->  out_mult_clear: the clear_in flag required by the multiplier
+
+*/
+
 module trans(
     input clk,
     input enable,
@@ -175,7 +196,5 @@ trans t47(clk, enable, reset, x_mid[4][6], y_mid[4][7], v_mid[3][7], clear_mid[4
 trans t57(clk, enable, reset, x_mid[5][6], y_mid[5][7], v_mid[4][7], clear_mid[5][6], shift[7], x_out[5], y_mid[4][7], v_mid[5][7], clear_out[5], shift[5], 33'b0, x_delay_mid[5][6]);
 trans t67(clk, enable, reset, x_mid[6][6], y_mid[6][7], v_mid[5][7], clear_mid[6][6], shift[7], x_out[6], y_mid[5][7], v_mid[6][7], clear_out[6], shift[6], 33'b0, x_delay_mid[6][6]);
 trans t77(clk, enable, reset, x_mid[7][6],     32'b0, v_mid[6][7], clear_mid[7][6], shift[7], x_out[7], y_mid[6][7],    v_out[7], clear_out[7], shift[7], 33'b0, x_delay_mid[7][6]);
-
-
 
 endmodule

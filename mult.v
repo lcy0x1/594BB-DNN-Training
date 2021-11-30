@@ -3,7 +3,7 @@
 /*
 Author: Arthur Wang
 Creation Date: Nov 13 
-Last Modified: Nov 17
+Last Modified: Nov 29
 
 module mac: multiply and accumulate module
 module m8x8: 8 by 8 matrix multiplication module
@@ -11,18 +11,14 @@ module m8x8: 8 by 8 matrix multiplication module
 ->  clk: clock
 ->  enable: global enable, nothing shall be done if it is low
 ->  reset: reset everything
-
-->  w_in: vertical input
-<-  w_out: place to shift out vertical input, typically ignored
-->  x_in: horizontal input
-<-  x_out: plaec to shift out horizontal input, typically ignored
-->  y_in: typically zero, input of shift register
-<-  y_out: output of shift register
-->  clear_in: clear signal that clears accumulator
-<-  clear_out: place to shift out clear signal, typically used for <shift>
-->  shift: shift out data on a horizontal line, paired with y_out
 ->  config: configurations
-->  b_out: binary relu derivative output
+
+->  win_raw: vertical input
+->  xin_raw: horizontal input
+->  clear_in_raw: clear signal that clears accumulator
+<-  z_out: output of shift register
+<-  clear_out: place to shift out clear signal, typically used for <shift>
+<-  b_out: binary relu derivative output
 
 How it works:
                  w_in
@@ -36,8 +32,9 @@ x_in, clear_in -> [mac] -> x_out, clear_out
                    v
                 w_out
 
-config[0]: transpose, switch w_in and x_in
 config[1]: relu, pass data through relu
+config[2]: transpose w
+config[3]: transpose x
 
 */
 

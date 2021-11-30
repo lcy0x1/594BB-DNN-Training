@@ -1,7 +1,7 @@
 /*
-Author: Arthur Wang
+Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 18
+Last Modified: Nov 28
 
 TODO: use Adder for write mode 3
 
