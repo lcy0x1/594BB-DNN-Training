@@ -1063,7 +1063,9 @@ in_data = 0;
 in_data = 0;
 #(CLK);
 
-    mode = 32'h0a1401;
+    // multiplication of A and B is A*B'
+    // here it means transpose B, B=#0, A=#4, answer is A*B
+    mode = 32'h061041;
     #(CLK*128);
     mode = 0;
     #(CLK);

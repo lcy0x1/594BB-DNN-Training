@@ -5,7 +5,7 @@
 /*
 Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 29
+Last Modified: Nov 30
 
 TODO: store b_out as output of matrix multiplication
 TODO: hadamard product with b_out during matrix multiplication
@@ -25,11 +25,11 @@ Lower 2 bits is for page number
 Operations: typically segregated by chunk of 4 bits
 chunk[0]: op code
 op code == 0: idle
-op code == 1:
-  chunk[1] = x page number (to read)
-  chunk[2] = w page number (to read)
-  chunk[3] = y page number (to write in bulk)
-  chunk[4] = configuration {use ReLU, Transpose}
+op code == 1: calculate A*B'
+  chunk[1] = A page number (to read)
+  chunk[2] = B page number (to read)
+  chunk[3] = result page number (to write in bulk)
+  chunk[4] = configuration {transpose A, transpose B, use ReLU, unused}
 op code == 2:
   chunk[1] = destination page number (to write in serial)
 op code == 3:

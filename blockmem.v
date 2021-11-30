@@ -24,7 +24,7 @@ Read related flags:
 ->  switch: signal to switch line
 <-  x_out: output bus
 <-  clear_out: For matrix multiplier unit. 
-      It is on one cycle after the last data on the respective line
+      It is the last data on the respective line
 
 Write related flags:
 ->  write mode: see below
