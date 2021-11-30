@@ -83,6 +83,7 @@ module blockmem(
   reg [2:0] raddr; // address of line to read
   wire [4:0] mid_raddr [7:0]; // cached read address
   wire [7:0] lr;
+  reg [2:0] delay_read_slice_ind;
 
   // write related variables
   wire [7:0] lw; // flags for last write, for updating <ind>
@@ -103,8 +104,6 @@ module blockmem(
   memory slice_7(clk, enable, reset, write_mode > 1 && bus_valid[7] ? write_mode : write_mode == 1 && write_slice_ind == 7 ? 3'b001 : 3'b000, mem_en[6], write_mode == 2 ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
   
   assign out_data = read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
-
-  reg [2:0] delay_read_slice_ind;
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior: clear al registers
