@@ -3,9 +3,9 @@
 `include "transpose.v"
 
 /*
-Author: Arthur Wang
+Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 19
+Last Modified: Nov 30
 
 TODO: store b_out as output of matrix multiplication
 TODO: hadamard product with b_out during matrix multiplication
@@ -25,11 +25,11 @@ Lower 2 bits is for page number
 Operations: typically segregated by chunk of 4 bits
 chunk[0]: op code
 op code == 0: idle
-op code == 1:
-  chunk[1] = x page number (to read)
-  chunk[2] = w page number (to read)
-  chunk[3] = y page number (to write in bulk)
-  chunk[4] = configuration {use ReLU, Transpose}
+op code == 1: calculate A*B'
+  chunk[1] = A page number (to read)
+  chunk[2] = B page number (to read)
+  chunk[3] = result page number (to write in bulk)
+  chunk[4] = configuration {transpose A, transpose B, use ReLU, unused}
 op code == 2:
   chunk[1] = destination page number (to write in serial)
 op code == 3:
@@ -83,12 +83,6 @@ module controller(
   wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 1 ? op_f[0]? 4 : 2 : op_e[3:2] == 1 ? 2 : 0 : 0;
   wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 2 ? op_f[0]? 4 : 2 : op_e[3:2] == 2 ? 2 : 0 : 0;
   wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? 1 : 0 : opcode == 1 ? op_c[3:2] == 3 ? op_f[0]? 4 : 2 : op_e[3:2] == 3 ? 2 : 0 : 0;
-  
-  // read mode 2nd bit for register file
-  wire re_0 = opcode == 3 ? op_a[3:2] == 0 ? 1 : 0 : 0;
-  wire re_1 = opcode == 3 ? op_a[3:2] == 1 ? 1 : 0 : 0;
-  wire re_2 = opcode == 3 ? op_a[3:2] == 2 ? 1 : 0 : 0;
-  wire re_3 = opcode == 3 ? op_a[3:2] == 3 ? 1 : 0 : 0;
 
   // write address for register file
   wire [1:0] wp_0 = opcode == 1 ? op_c[3:2] == 0 ? op_c[1:0] : op_e[3:2] == 0 ? op_e[1:0] : 0 : opcode == 2 ? op_a[3:2] == 0 ? op_a[1:0] : 0 : 0;
@@ -115,6 +109,14 @@ module controller(
   reg [2:0] ind_wl;
   // line index for X matrix, incremented only after <ind_wl> completes 1 cycle
   reg [2:0] ind_xl;
+
+  // read mode for register file
+  wire [1:0] re_x = op_d[3] ? 3 : 1;
+  wire [1:0] re_w = op_d[2] ? 3 : 1;
+  wire [1:0] re_0 = opcode == 3 ? op_a[3:2] == 0 ? 2 : 0 : opcode == 1 && en ? op_a[3:2] == 0 ? re_x : op_b[3:2] == 0 ? re_w : 0 : 0;
+  wire [1:0] re_1 = opcode == 3 ? op_a[3:2] == 1 ? 2 : 0 : opcode == 1 && en ? op_a[3:2] == 1 ? re_x : op_b[3:2] == 1 ? re_w : 0 : 0;
+  wire [1:0] re_2 = opcode == 3 ? op_a[3:2] == 2 ? 2 : 0 : opcode == 1 && en ? op_a[3:2] == 2 ? re_x : op_b[3:2] == 2 ? re_w : 0 : 0;
+  wire [1:0] re_3 = opcode == 3 ? op_a[3:2] == 3 ? 2 : 0 : opcode == 1 && en ? op_a[3:2] == 3 ? re_x : op_b[3:2] == 3 ? re_w : 0 : 0;
   
   wire [31:0] out_data_0;
   wire [31:0] out_data_1;
@@ -172,10 +174,10 @@ module controller(
   wire [31:0] x_delay_out [7:0];
   wire temp = 1;
   
-  blockmem rf_0(clk, enable, reset, {re_0, en}, we_0, in_data, size, chunk_read_0, clear_in_0, chunk_write_0, y_valid, switch_0, rp_0, wp_0, out_data_0);
-  blockmem rf_1(clk, enable, reset, {re_1, en}, we_1, in_data, size, chunk_read_1, clear_in_1, chunk_write_1, y_valid, switch_1, rp_1, wp_1, out_data_1);
-  blockmem rf_2(clk, enable, reset, {re_2, en}, we_2, in_data, size, chunk_read_2, clear_in_2, chunk_write_2, y_valid, switch_2, rp_2, wp_2, out_data_2);
-  blockmem rf_3(clk, enable, reset, {re_3, en}, we_3, in_data, size, chunk_read_3, clear_in_3, chunk_write_3, y_valid, switch_3, rp_3, wp_3, out_data_3);
+  blockmem rf_0(clk, enable, reset, re_0, we_0, in_data, size, chunk_read_0, clear_in_0, chunk_write_0, y_valid, switch_0, rp_0, wp_0, out_data_0);
+  blockmem rf_1(clk, enable, reset, re_1, we_1, in_data, size, chunk_read_1, clear_in_1, chunk_write_1, y_valid, switch_1, rp_1, wp_1, out_data_1);
+  blockmem rf_2(clk, enable, reset, re_2, we_2, in_data, size, chunk_read_2, clear_in_2, chunk_write_2, y_valid, switch_2, rp_2, wp_2, out_data_2);
+  blockmem rf_3(clk, enable, reset, re_3, we_3, in_data, size, chunk_read_3, clear_in_3, chunk_write_3, y_valid, switch_3, rp_3, wp_3, out_data_3);
 
   genvar i;
   generate
@@ -196,10 +198,8 @@ module controller(
   assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? x_switch : op_b[3:2] == 3 ? w_switch : 0 : 0;
 
   assign clear_in = opcode == 1 ? op_a[3:2] == 0 ? clear_in_0 : op_a[3:2] == 1 ? clear_in_1 : op_a[3:2] == 2 ? clear_in_2 : clear_in_3 : 0;
-
-  t8x8 tmodule(clk, enable, reset, 1'b1,  w_in, zeros, en, t_y_out, clear_in, t_clear_out);
-  
-  m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, y_out, clear_out, op_d, b_out);
+ 
+  m8x8 mult(clk, reset, enable, en, op_d, w_in, x_in, clear_in, y_out, clear_out, b_out);
 
   assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
 

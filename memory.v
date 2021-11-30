@@ -1,7 +1,7 @@
 /*
-Author: Arthur Wang
+Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 18
+Last Modified: Nov 30
 
 TODO: use Adder for write mode 3
 
@@ -21,9 +21,8 @@ Read-related wires:
 ->  read_page_line: read address
 <-  out_data: data output port
 <-  next_read_mode: <read_mode> for next memory block to use
-<-  read_finish: only on the first cycle after all meaningful data are read
-      For <clear_out> in matrix mult to clear content after calculation
-      Only in read mode 1
+<-  read_finish: ast cycle of read of current line
+      Only in read mode 1 & 3
 <-  last_read: last cycle of read of current line
       Only in read mode 2
 <-  next_read_page_line: <read_page_line> for next memory block to use
@@ -84,14 +83,14 @@ module memory(
   reg [4:0] delay_read_page_line; // delayed version of read_page_line
   reg delay_bulk_we;
   (* ram_style = "block" *) reg [31:0] data [2047:0]; // BRAM
-  reg delay_read_mode;
+  reg [1:0] delay_read_mode;
   
-  wire [10:0] read_index = {read_page_line, read_cell}; // actual read index
+  wire [10:0] read_index = read_mode == 3 ? {read_page_line[4:3], read_cell[5:3], read_page_line[2:0], read_cell[2:0]} : {read_page_line, read_cell}; // actual read index
   wire [10:0] write_index = {write_page_line, write_cell}; // actual write index
 
   assign next_write_page_line = delay_bulk_we ? delay_write_page_line : write_page_line;
   assign next_read_page_line = read_mode == 2 ? read_page_line : delay_read_page_line;
-  assign next_read_mode = read_mode == 2 ? 2 : delay_read_mode ? 1 : 0;
+  assign next_read_mode = read_mode == 2 ? 2 : delay_read_mode[0] ? delay_read_mode : 0;
 
   wire bulk_we = write_mode == 2 || cont_write > 0;
 
@@ -124,11 +123,11 @@ module memory(
       cont_write <= write_mode == 2 ? 7 : cont_write > 0 ? cont_write - 1 : 0;
       // perform read operation
       if(write_mode == 3 || write_mode == 4) begin
-        out_data <= read_mode > 0 ? data[read_index] : 0;
-      end else begin
         out_data <= 0;
         delay_write_value <= write_mode == 3 ? sumof : data[write_index] == 1 ? in_data : 0;
         delay_write_index <= write_index;
+      end else begin
+        out_data <= read_mode > 0 ? data[read_index] : 0;
       end
       // perform write operation
       if(write_mode == 1 || bulk_we) begin
@@ -137,12 +136,13 @@ module memory(
         data[delay_write_index] <= delay_write_value;
       end
       // delayed version of inputs
-      delay_read_mode <= read_mode[0];
+      delay_read_mode <= read_mode;
       delay_read_page_line <= read_page_line;
       delay_write_page_line <= bulk_we ? write_page_line : 0;
       delay_bulk_we <= bulk_we;
+      // only in read mode 1 & 3
+      read_finish <= read_mode[0] && read_cell == size;
       // ending flags. for last_write, use size - 1 because it has extra delay
-      read_finish <= delay_read_mode && read_cell == 0;
       last_write <= write_mode == 1 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
       last_read <= read_mode == 2 && read_cell == size - 1;
     end
