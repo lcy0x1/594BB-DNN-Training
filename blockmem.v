@@ -51,6 +51,7 @@ Read Mode:
 0: idle
 1: bulk read. It should be one for the entire span of reading process.
 2: serial read.
+3: transposed bulk read
 
 Addressing:
 size[5:0] tells the number of data per line
@@ -94,6 +95,7 @@ module blockmem(
   // slice write modes:
   // write mode == 2 && bus_valid[i] -> start bulk write, send flag 2
   // write mode == 1 && ind == i -> enable serial write, set flag 1
+
   memory slice_0(clk, enable, reset, write_mode > 1 && bus_valid[0] ? write_mode : write_mode == 1 && write_slice_ind == 0 ? 3'b001 : 3'b000, read_mode, write_mode == 2 ? bus_in[0] : in_data, size[5:0], {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], lr[0], mid_raddr[0], mid_waddr[0]);
   memory slice_1(clk, enable, reset, write_mode > 1 && bus_valid[1] ? write_mode : write_mode == 1 && write_slice_ind == 1 ? 3'b001 : 3'b000, mem_en[0], write_mode == 2 ? bus_in[1] : in_data, size[5:0], mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], lr[1], mid_raddr[1], mid_waddr[1]);
   memory slice_2(clk, enable, reset, write_mode > 1 && bus_valid[2] ? write_mode : write_mode == 1 && write_slice_ind == 2 ? 3'b001 : 3'b000, mem_en[1], write_mode == 2 ? bus_in[2] : in_data, size[5:0], mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], lr[2], mid_raddr[2], mid_waddr[2]);
