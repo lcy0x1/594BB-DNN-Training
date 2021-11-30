@@ -56,8 +56,6 @@ module controller(
   wire [3:0] op_d = operation[19:16];
   wire [3:0] op_e = operation[23:20];
   wire [3:0] op_f = operation[27:24];
-
-  wire transpose = opcode == 1 && op_d[0];
   
   // write enable for register file
 
@@ -183,15 +181,14 @@ module controller(
     end
   endgenerate
 
-  wire tx_switch = transpose ? w_switch : x_switch;
-  wire tw_switch = transpose ? x_switch : w_switch;
+  assign switch_0 = opcode == 1 ? op_a[3:2] == 0 ? x_switch : op_b[3:2] == 0 ? w_switch : 0 : 0;
+  assign switch_1 = opcode == 1 ? op_a[3:2] == 1 ? x_switch : op_b[3:2] == 1 ? w_switch : 0 : 0;
+  assign switch_2 = opcode == 1 ? op_a[3:2] == 2 ? x_switch : op_b[3:2] == 2 ? w_switch : 0 : 0;
+  assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? x_switch : op_b[3:2] == 3 ? w_switch : 0 : 0;
 
-  assign switch_1 = opcode == 1 ? op_a[3:2] == 1 ? tx_switch : op_b[3:2] == 1 ? tw_switch : 0 : 0;
-  assign switch_2 = opcode == 1 ? op_a[3:2] == 2 ? tx_switch : op_b[3:2] == 2 ? tw_switch : 0 : 0;
-  assign switch_0 = opcode == 1 ? op_a[3:2] == 0 ? tx_switch : op_b[3:2] == 0 ? tw_switch : 0 : 0;
-  assign switch_3 = opcode == 1 ? op_a[3:2] == 3 ? tx_switch : op_b[3:2] == 3 ? tw_switch : 0 : 0;
+  assign clear_in = opcode == 1 ? op_a[3:2] == 0 ? clear_in_0 : op_a[3:2] == 1 ? clear_in_1 : op_a[3:2] == 2 ? clear_in_2 : clear_in_3 : 0;
 
-  m8x8 mult(w_in, x_in, zeros, transpose ? clear_in_1 : clear_in_0, enable, clear_out, clk, reset, t2, t3, y_out, clear_out, op_d, b_out);
+  m8x8 mult(w_in, x_in, zeros, clear_in, enable, clear_out, clk, reset, y_out, clear_out, op_d, b_out);
 
   assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
 
