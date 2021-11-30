@@ -1062,7 +1062,7 @@ in_data = 0;
 in_data = 0;
 #(CLK);
 
-    mode = 32'h1401;
+    mode = 32'h521401;
     #(CLK*96);
     mode = 0;
     #(CLK);

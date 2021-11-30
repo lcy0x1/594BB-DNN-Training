@@ -3,6 +3,8 @@ Author: Arthur Wang
 Creation Date: Nov 14 
 Last Modified: Nov 18
 
+TODO: use Adder for write mode 3
+
 this is a memory slice that has 1 input port and 1 output port
 basic wires:
 ->  clk: clock
@@ -60,7 +62,7 @@ module memory(
   input clk,
   input enable,
   input reset,
-  input [1:0] write_mode,
+  input [2:0] write_mode,
   input [1:0] read_mode,
   input [31:0] in_data,
   input [5:0] size,
@@ -117,6 +119,8 @@ module memory(
         data[write_index] <= in_data;
       end else if(write_mode == 3) begin
         data[write_index] <= data[write_index] + in_data;
+      end else if(write_mode == 4) begin
+        data[write_index] <= data[write_index] == 1 ? in_data : 0;
       end
       // delayed version of inputs
       delay_read_mode <= read_mode[0];
