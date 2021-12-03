@@ -22,6 +22,7 @@ for (let i = 0; i < 64; i++) {
         w3_arr[i][j] = seed % 2;
         seed = seed * 17 % 100007;
         dy_arr[i][j] = seed % 2;
+        seed = seed * 17 % 100007;
     }
 }
 
@@ -36,7 +37,7 @@ for (let i1 = 0; i1 < 2; i1++) {
     }
 }
 
-str0 += `mode = 32'h42`;
+str0 += `mode = 32'h42;\n`;
 for (let i = 0; i < 16; i++) {
     for (let j = 0; j < 16; j++) {
         str0 += `in_data = ${w2_arr[i][j]};\n`;
@@ -44,7 +45,7 @@ for (let i = 0; i < 16; i++) {
     }
 }
 
-str0 += `mode = 32'h12`;
+str0 += `mode = 32'h12;\n`;
 for (let i = 0; i < 16; i++) {
     for (let j = 0; j < 16; j++) {
         str0 += `in_data = ${w3_arr[i][j]};\n`;
