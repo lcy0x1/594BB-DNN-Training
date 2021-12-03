@@ -13,16 +13,16 @@ for (let i = 0; i < 64; i++) {
         if (!w2_arr[i]) w2_arr[i] = [];
         if (!w3_arr[i]) w3_arr[i] = [];
         if (!dy_arr[i]) dy_arr[i] = [];
-        w_arr[i][j] = seed % 2;
-        seed = seed * 17 % 100007;
-        x_arr[i][j] = seed % 2;
-        seed = seed * 17 % 100007;
-        w2_arr[i][j] = seed % 2;
-        seed = seed * 17 % 100007;
-        w3_arr[i][j] = seed % 2;
-        seed = seed * 17 % 100007;
-        dy_arr[i][j] = seed % 2;
-        seed = seed * 17 % 100007;
+        w_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        seed = seed * 107 % 100000007;
+        x_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        seed = seed * 107 % 100000007;
+        w2_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        seed = seed * 107 % 100000007;
+        w3_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        seed = seed * 107 % 100000007;
+        dy_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        seed = seed * 107 % 100000007;
     }
 }
 
@@ -62,7 +62,7 @@ for (let i = 0; i < 16; i++) {
 }
 
 
-str0 += `mode = 32'h82;\n`;
+str0 += `mode = 32'h182;\n`;
 for (let i = 0; i < 16; i++) {
     for (let j = 0; j < 16; j++) {
         str0 += `in_data = ${dy_arr[i][j]};\n`;

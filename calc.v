@@ -13,7 +13,8 @@ module multiplier(
   input signed [31:0] b,
   output signed [31:0] y
 );
-  assign y = a*b;
+  wire [63:0] z = a*b;
+  assign y = {z[63], z[46:16]};
 endmodule
 
 module adder(
