@@ -101,14 +101,25 @@ module blockmem(
   // write mode == 2 && bus_valid[i] -> start bulk write, send flag 2
   // write mode == 1 && ind == i -> enable serial write, set flag 1
 
-  memory slice_0(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[0] || !write_mode[2] && write_slice_ind == 0) ? write_mode : 3'b000, read_mode, write_mode[2] ? bus_in[0] : in_data, size[5:0], {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], lr[0], mid_raddr[0], mid_waddr[0]);
-  memory slice_1(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[1] || !write_mode[2] && write_slice_ind == 1) ? write_mode : 3'b000, mem_en[0], write_mode[2] ? bus_in[1] : in_data, size[5:0], mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], lr[1], mid_raddr[1], mid_waddr[1]);
-  memory slice_2(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[2] || !write_mode[2] && write_slice_ind == 2) ? write_mode : 3'b000, mem_en[1], write_mode[2] ? bus_in[2] : in_data, size[5:0], mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], lr[2], mid_raddr[2], mid_waddr[2]);
-  memory slice_3(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[3] || !write_mode[2] && write_slice_ind == 3) ? write_mode : 3'b000, mem_en[2], write_mode[2] ? bus_in[3] : in_data, size[5:0], mid_raddr[2],       mid_waddr[2],        x_out[3], mem_en[3], clear_out[3], lw[3], lr[3], mid_raddr[3], mid_waddr[3]);
-  memory slice_4(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[4] || !write_mode[2] && write_slice_ind == 4) ? write_mode : 3'b000, mem_en[3], write_mode[2] ? bus_in[4] : in_data, size[5:0], mid_raddr[3],       mid_waddr[3],        x_out[4], mem_en[4], clear_out[4], lw[4], lr[4], mid_raddr[4], mid_waddr[4]);
-  memory slice_5(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[5] || !write_mode[2] && write_slice_ind == 5) ? write_mode : 3'b000, mem_en[4], write_mode[2] ? bus_in[5] : in_data, size[5:0], mid_raddr[4],       mid_waddr[4],        x_out[5], mem_en[5], clear_out[5], lw[5], lr[5], mid_raddr[5], mid_waddr[5]);
-  memory slice_6(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[6] || !write_mode[2] && write_slice_ind == 6) ? write_mode : 3'b000, mem_en[5], write_mode[2] ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
-  memory slice_7(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[7] || !write_mode[2] && write_slice_ind == 7) ? write_mode : 3'b000, mem_en[6], write_mode[2] ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
+  wire [3:0] wms [7:0];
+
+  assign wms[0] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[0]} : {1'b0, write_slice_ind == 0} , write_mode[1:0] } : 3'b000;
+  assign wms[1] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[1]} : {1'b0, write_slice_ind == 1} , write_mode[1:0] } : 3'b000;
+  assign wms[2] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[2]} : {1'b0, write_slice_ind == 2} , write_mode[1:0] } : 3'b000;
+  assign wms[3] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[3]} : {1'b0, write_slice_ind == 3} , write_mode[1:0] } : 3'b000;
+  assign wms[4] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[4]} : {1'b0, write_slice_ind == 4} , write_mode[1:0] } : 3'b000;
+  assign wms[5] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[5]} : {1'b0, write_slice_ind == 5} , write_mode[1:0] } : 3'b000;
+  assign wms[6] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[6]} : {1'b0, write_slice_ind == 6} , write_mode[1:0] } : 3'b000;
+  assign wms[7] = |write_mode[1:0] ? { write_mode[2] ? {1'b1, bus_valid[7]} : {1'b0, write_slice_ind == 7} , write_mode[1:0] } : 3'b000;
+
+  memory slice_0(clk, enable, reset, wms[0], read_mode, write_mode[2] ? bus_in[0] : in_data, size[5:0], {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], lr[0], mid_raddr[0], mid_waddr[0]);
+  memory slice_1(clk, enable, reset, wms[1], mem_en[0], write_mode[2] ? bus_in[1] : in_data, size[5:0], mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], lr[1], mid_raddr[1], mid_waddr[1]);
+  memory slice_2(clk, enable, reset, wms[2], mem_en[1], write_mode[2] ? bus_in[2] : in_data, size[5:0], mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], lr[2], mid_raddr[2], mid_waddr[2]);
+  memory slice_3(clk, enable, reset, wms[3], mem_en[2], write_mode[2] ? bus_in[3] : in_data, size[5:0], mid_raddr[2],       mid_waddr[2],        x_out[3], mem_en[3], clear_out[3], lw[3], lr[3], mid_raddr[3], mid_waddr[3]);
+  memory slice_4(clk, enable, reset, wms[4], mem_en[3], write_mode[2] ? bus_in[4] : in_data, size[5:0], mid_raddr[3],       mid_waddr[3],        x_out[4], mem_en[4], clear_out[4], lw[4], lr[4], mid_raddr[4], mid_waddr[4]);
+  memory slice_5(clk, enable, reset, wms[5], mem_en[4], write_mode[2] ? bus_in[5] : in_data, size[5:0], mid_raddr[4],       mid_waddr[4],        x_out[5], mem_en[5], clear_out[5], lw[5], lr[5], mid_raddr[5], mid_waddr[5]);
+  memory slice_6(clk, enable, reset, wms[6], mem_en[5], write_mode[2] ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
+  memory slice_7(clk, enable, reset, wms[7], mem_en[6], write_mode[2] ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
   
   assign out_data = read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
 
