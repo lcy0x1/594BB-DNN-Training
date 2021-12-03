@@ -2104,8 +2104,17 @@ mode = 32'hc66241;
 mode = 0;
 #(CLK);
 
+
+// 0: unused
+// 0: overwrite
+// 8: relu derivative: B3
+// 6: transpose second operand, use ReLU
+// d: target: Y
+// 6: second operand: A2
+// 1: first operand: W3
+// 1: opcode = 1
 // Y = W3 * A2
-mode = 32'h86d611;
+mode = 32'h0086d611;
 #(CLK*128);
 mode = 0;
 #(CLK);
@@ -2628,10 +2637,29 @@ in_data = 0;
 
 mode = 0;
 #(CLK);
-mode = 32'h001cc811;
+
+// 0: unused
+// 1: hadamard product
+// 0: no relu derivative
+// c: transpose both, no relu
+// c: target: P2
+// 8: second operand: P3
+// 1: first operand: W3^T
+// 1: opcode = 1
+mode = 32'h010cc811;
 #(CLK*128);
 mode = 0;
 #(CLK)
+
+// 0: unused
+// 2: addition
+// 0: no relu derivative
+// 0: no transpose, no relu
+// 1: target: W3
+// 6: second operand: A2^T
+// 8: first operand: P3
+// 1: opcode = 1
+mode = 32'h02001681;
 
     $finish;
   end
