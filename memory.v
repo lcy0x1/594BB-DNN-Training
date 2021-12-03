@@ -92,7 +92,7 @@ module memory(
   assign next_read_page_line = read_mode == 2 ? read_page_line : delay_read_page_line;
   assign next_read_mode = read_mode == 2 ? 2 : delay_read_mode[0] ? delay_read_mode : 0;
 
-  wire bulk_we = write_mode == 2 || cont_write > 0;
+  wire bulk_we = |write_mode[1:0] && write_mode[2] || cont_write > 0;
 
   reg [31:0] delay_write_value;
   reg [10:0] delay_write_index;
@@ -100,7 +100,7 @@ module memory(
   wire [31:0] sumof;
   wire [31:0] in_a;
 
-  adder s0(data[write_mode == 3 ? write_index : read_index], in_data, sumof);
+  adder s0(data[write_mode[1:0] == 3 ? write_index : read_index], in_data, sumof);
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior
@@ -119,20 +119,20 @@ module memory(
     end else if(enable) begin
       // increase read counter / write counter / continuation countdown if enabled
       read_cell <= read_mode > 0 ? read_cell == size ? 0 : read_cell + 1 : read_cell;
-      write_cell <= write_mode > 0 || cont_write > 0 ? write_cell == size ? 0 : write_cell + 1 : write_cell;
-      cont_write <= write_mode == 2 ? 7 : cont_write > 0 ? cont_write - 1 : 0;
+      write_cell <= |write_mode[1:0] || cont_write > 0 ? write_cell == size ? 0 : write_cell + 1 : write_cell;
+      cont_write <= |write_mode[1:0] && write_mode[2] ? 7 : cont_write > 0 ? cont_write - 1 : 0;
       // perform read operation
-      if(write_mode == 3 || write_mode == 4) begin
+      if(|write_mode[1:0] && write_mode[1]) begin
         out_data <= 0;
-        delay_write_value <= write_mode == 3 ? sumof : data[write_index] == 1 ? in_data : 0;
+        delay_write_value <= write_mode[0] ? sumof : data[write_index] == 1 ? in_data : 0;
         delay_write_index <= write_index;
       end else begin
         out_data <= read_mode > 0 ? data[read_index] : 0;
       end
       // perform write operation
-      if(write_mode == 1 || bulk_we) begin
+      if(write_mode[1:0] == 1 || bulk_we) begin
         data[write_index] <= in_data;
-      end else if(write_mode == 3 || write_mode == 4) begin
+      end else if(write_mode[1]) begin
         data[delay_write_index] <= delay_write_value;
       end
       // delayed version of inputs
@@ -143,7 +143,7 @@ module memory(
       // only in read mode 1 & 3
       read_finish <= read_mode[0] && read_cell == size;
       // ending flags. for last_write, use size - 1 because it has extra delay
-      last_write <= write_mode == 1 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
+      last_write <= |write_mode[1:0] && write_mode[2] == 0 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
       last_read <= read_mode == 2 && read_cell == size - 1;
     end
   end

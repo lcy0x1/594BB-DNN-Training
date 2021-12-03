@@ -33,15 +33,20 @@ Write related flags:
 ->  bus_valid: input valid port for bulk write mode
 ->  page_write: page address to write
 
-Write Mode:
+Write Mode [1:0]:
 0: idle
-1: serial write, one data at a time. The size of input MUST match <size>
+1: normal
+2: hadamard
+3: addition
+
+Write Mode [2]:
+0: serial write, one data at a time. The size of input MUST match <size>
     Implementation: The <memory> block will iterate through every cell on a line.
     When the last value is written, one of the <lw> flags will be on and <write_slice_ind> will increment
     so that it will write to the next slice. After the last slice is written,
     the <lw[7]> flag will be on and the <waddr> will increase, so that is is writing the next line
     of each slices. Basically for(line) for(slice) for(cell)
-2: bulk write, 8 data at a time. 
+1: bulk write, 8 data at a time. 
     It should be on for the entire duration of write.
     To be safe, it should be on before operation occurs and off after all operation ceases.
     <bus_valid> signal is on for only 1 cycle at a time, signaling the beginning of 8 data.
@@ -96,14 +101,14 @@ module blockmem(
   // write mode == 2 && bus_valid[i] -> start bulk write, send flag 2
   // write mode == 1 && ind == i -> enable serial write, set flag 1
 
-  memory slice_0(clk, enable, reset, write_mode > 1 && bus_valid[0] ? write_mode : write_mode == 1 && write_slice_ind == 0 ? 3'b001 : 3'b000, read_mode, write_mode == 2 ? bus_in[0] : in_data, size[5:0], {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], lr[0], mid_raddr[0], mid_waddr[0]);
-  memory slice_1(clk, enable, reset, write_mode > 1 && bus_valid[1] ? write_mode : write_mode == 1 && write_slice_ind == 1 ? 3'b001 : 3'b000, mem_en[0], write_mode == 2 ? bus_in[1] : in_data, size[5:0], mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], lr[1], mid_raddr[1], mid_waddr[1]);
-  memory slice_2(clk, enable, reset, write_mode > 1 && bus_valid[2] ? write_mode : write_mode == 1 && write_slice_ind == 2 ? 3'b001 : 3'b000, mem_en[1], write_mode == 2 ? bus_in[2] : in_data, size[5:0], mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], lr[2], mid_raddr[2], mid_waddr[2]);
-  memory slice_3(clk, enable, reset, write_mode > 1 && bus_valid[3] ? write_mode : write_mode == 1 && write_slice_ind == 3 ? 3'b001 : 3'b000, mem_en[2], write_mode == 2 ? bus_in[3] : in_data, size[5:0], mid_raddr[2],       mid_waddr[2],        x_out[3], mem_en[3], clear_out[3], lw[3], lr[3], mid_raddr[3], mid_waddr[3]);
-  memory slice_4(clk, enable, reset, write_mode > 1 && bus_valid[4] ? write_mode : write_mode == 1 && write_slice_ind == 4 ? 3'b001 : 3'b000, mem_en[3], write_mode == 2 ? bus_in[4] : in_data, size[5:0], mid_raddr[3],       mid_waddr[3],        x_out[4], mem_en[4], clear_out[4], lw[4], lr[4], mid_raddr[4], mid_waddr[4]);
-  memory slice_5(clk, enable, reset, write_mode > 1 && bus_valid[5] ? write_mode : write_mode == 1 && write_slice_ind == 5 ? 3'b001 : 3'b000, mem_en[4], write_mode == 2 ? bus_in[5] : in_data, size[5:0], mid_raddr[4],       mid_waddr[4],        x_out[5], mem_en[5], clear_out[5], lw[5], lr[5], mid_raddr[5], mid_waddr[5]);
-  memory slice_6(clk, enable, reset, write_mode > 1 && bus_valid[6] ? write_mode : write_mode == 1 && write_slice_ind == 6 ? 3'b001 : 3'b000, mem_en[5], write_mode == 2 ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
-  memory slice_7(clk, enable, reset, write_mode > 1 && bus_valid[7] ? write_mode : write_mode == 1 && write_slice_ind == 7 ? 3'b001 : 3'b000, mem_en[6], write_mode == 2 ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
+  memory slice_0(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[0] || !write_mode[2] && write_slice_ind == 0) ? write_mode : 3'b000, read_mode, write_mode == 2 ? bus_in[0] : in_data, size[5:0], {page_read, raddr}, {page_write, waddr}, x_out[0], mem_en[0], clear_out[0], lw[0], lr[0], mid_raddr[0], mid_waddr[0]);
+  memory slice_1(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[1] || !write_mode[2] && write_slice_ind == 1) ? write_mode : 3'b000, mem_en[0], write_mode == 2 ? bus_in[1] : in_data, size[5:0], mid_raddr[0],       mid_waddr[0],        x_out[1], mem_en[1], clear_out[1], lw[1], lr[1], mid_raddr[1], mid_waddr[1]);
+  memory slice_2(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[2] || !write_mode[2] && write_slice_ind == 2) ? write_mode : 3'b000, mem_en[1], write_mode == 2 ? bus_in[2] : in_data, size[5:0], mid_raddr[1],       mid_waddr[1],        x_out[2], mem_en[2], clear_out[2], lw[2], lr[2], mid_raddr[2], mid_waddr[2]);
+  memory slice_3(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[3] || !write_mode[2] && write_slice_ind == 3) ? write_mode : 3'b000, mem_en[2], write_mode == 2 ? bus_in[3] : in_data, size[5:0], mid_raddr[2],       mid_waddr[2],        x_out[3], mem_en[3], clear_out[3], lw[3], lr[3], mid_raddr[3], mid_waddr[3]);
+  memory slice_4(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[4] || !write_mode[2] && write_slice_ind == 4) ? write_mode : 3'b000, mem_en[3], write_mode == 2 ? bus_in[4] : in_data, size[5:0], mid_raddr[3],       mid_waddr[3],        x_out[4], mem_en[4], clear_out[4], lw[4], lr[4], mid_raddr[4], mid_waddr[4]);
+  memory slice_5(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[5] || !write_mode[2] && write_slice_ind == 5) ? write_mode : 3'b000, mem_en[4], write_mode == 2 ? bus_in[5] : in_data, size[5:0], mid_raddr[4],       mid_waddr[4],        x_out[5], mem_en[5], clear_out[5], lw[5], lr[5], mid_raddr[5], mid_waddr[5]);
+  memory slice_6(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[6] || !write_mode[2] && write_slice_ind == 6) ? write_mode : 3'b000, mem_en[5], write_mode == 2 ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
+  memory slice_7(clk, enable, reset, |write_mode[1:0] && (write_mode[2] && bus_valid[7] || !write_mode[2] && write_slice_ind == 7) ? write_mode : 3'b000, mem_en[6], write_mode == 2 ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
   
   assign out_data = read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
 
@@ -116,10 +121,10 @@ module blockmem(
       delay_read_slice_ind <= 0;
     end else if(enable) begin
       // the waddr update logic is different in write mode 1 and write mode 2
-      if(write_mode == 1) begin
+      if(|write_mode[1:0] && !write_mode[2]) begin
         write_slice_ind <= |lw ? write_slice_ind == 7 ? 0 : write_slice_ind + 1 : write_slice_ind;
         waddr <= lw[7] ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
-      end else begin 
+      end else if(|write_mode[1:0] && write_mode[2]) begin 
         // increase the line index <waddr> on finishing a line, all slices are written together
         waddr <= lw[0] ? waddr == size[8:6] ? 0 : waddr + 1 : waddr;
       end
