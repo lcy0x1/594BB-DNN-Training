@@ -3,8 +3,6 @@ Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
 Last Modified: Nov 30
 
-TODO: use Adder for write mode 3
-
 this is a memory slice that has 1 input port and 1 output port
 basic wires:
 ->  clk: clock
@@ -44,12 +42,19 @@ read_page_line/write_page_line: {page address, line address}, 5 bits in total
 read_cell/write_cell: {cell address}, 6 bits in total
 
 
-Write Mode:
+Write Mode: [3:2]
 0: Idle
 1: Write data serially. The number of cycle for "1" MUST be a multiple of <size>.
-2. Write 8 consecutive value. This is primarily for saving results from the 8x8 mult.
+2: disabled parallel
+3: Write 8 consecutive value. This is primarily for saving results from the 8x8 mult.
     It MUST be on for only 1 cycle, and then for the rest of the time it MUST be "0".
-3. Instead of overwriting, it adds to the memory
+
+[1:0]
+0: idle
+1: overwrite
+2: hadamard
+3: add
+
 
 Read Mode:
 0: Idle
@@ -61,7 +66,7 @@ module memory(
   input clk,
   input enable,
   input reset,
-  input [2:0] write_mode,
+  input [3:0] write_mode,
   input [1:0] read_mode,
   input [31:0] in_data,
   input [5:0] size,
@@ -92,7 +97,8 @@ module memory(
   assign next_read_page_line = read_mode == 2 ? read_page_line : delay_read_page_line;
   assign next_read_mode = read_mode == 2 ? 2 : delay_read_mode[0] ? delay_read_mode : 0;
 
-  wire bulk_we = |write_mode[1:0] && write_mode[2] || cont_write > 0;
+  wire bulk_we = |write_mode[1:0] && write_mode[3] && (write_mode[2] || cont_write > 0);
+  wire write_enable = |write_mode[1:0] && (write_mode[2] || cont_write > 0);
 
   reg [31:0] delay_write_value;
   reg [10:0] delay_write_index;
@@ -119,10 +125,10 @@ module memory(
     end else if(enable) begin
       // increase read counter / write counter / continuation countdown if enabled
       read_cell <= read_mode > 0 ? read_cell == size ? 0 : read_cell + 1 : read_cell;
-      write_cell <= |write_mode[1:0] || cont_write > 0 ? write_cell == size ? 0 : write_cell + 1 : write_cell;
-      cont_write <= |write_mode[1:0] && write_mode[2] ? 7 : cont_write > 0 ? cont_write - 1 : 0;
+      write_cell <= write_enable ? write_cell == size ? 0 : write_cell + 1 : write_cell;
+      cont_write <= |write_mode[1:0] && write_mode[3] && write_mode[2] ? 7 : cont_write > 0 ? cont_write - 1 : 0;
       // perform read operation
-      if(|write_mode[1:0] && write_mode[1]) begin
+      if(write_mode[1]) begin
         out_data <= 0;
         delay_write_value <= write_mode[0] ? sumof : data[write_index] == 1 ? in_data : 0;
         delay_write_index <= write_index;
@@ -130,9 +136,9 @@ module memory(
         out_data <= read_mode > 0 ? data[read_index] : 0;
       end
       // perform write operation
-      if(write_mode[1:0] == 1 || bulk_we) begin
+      if(write_mode[1:0] == 1 && write_enable) begin
         data[write_index] <= in_data;
-      end else if(write_mode[1]) begin
+      end else if(write_mode[1] && write_enable) begin
         data[delay_write_index] <= delay_write_value;
       end
       // delayed version of inputs
@@ -143,7 +149,7 @@ module memory(
       // only in read mode 1 & 3
       read_finish <= read_mode[0] && read_cell == size;
       // ending flags. for last_write, use size - 1 because it has extra delay
-      last_write <= |write_mode[1:0] && write_mode[2] == 0 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
+      last_write <= |write_mode[1:0] && write_mode[3:2] == 1 && write_cell == size - 1 || bulk_we && write_cell == size - 1;
       last_read <= read_mode == 2 && read_cell == size - 1;
     end
   end
