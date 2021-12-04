@@ -1,7 +1,7 @@
 /*
 Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Nov 30
+Last Modified: Dec 3
 
 this is a memory slice that has 1 input port and 1 output port
 basic wires:
@@ -107,6 +107,7 @@ module memory(
   wire [31:0] in_a;
 
   reg [31:0] data_read;
+  reg [2:0] delay_write_mode; 
 
   wire [10:0] true_write_index = write_mode[1] ? delay_write_index : write_index;
 
@@ -128,6 +129,7 @@ module memory(
       delay_read_mode <= 0;
       delay_write_value <= 0;
       delay_write_index <= 0;
+      delay_write_mode <= 0;
     end else if(enable) begin
       // increase read counter / write counter / continuation countdown if enabled
       read_cell <= read_mode > 0 ? read_cell == size ? 0 : read_cell + 1 : read_cell;
@@ -141,14 +143,15 @@ module memory(
         delay_write_index <= write_index;
       end
       // perform write operation
-      if(write_enable) begin
-        data[true_write_index] <= write_mode[1] ? write_mode[0] ? sumof : data_read == 1 ? delay_write_value : 0 : in_data;
+      if(write_enable && !write_mode[1] || &delay_write_mode[2:1]) begin
+        data[true_write_index] <= &delay_write_mode[2:1] ? delay_write_mode[0] ? sumof : data_read == 1 ? delay_write_value : 0 : in_data;
       end
       // delayed version of inputs
       delay_read_mode <= read_mode;
       delay_read_page_line <= read_page_line;
       delay_write_page_line <= bulk_we ? write_page_line : 0;
       delay_bulk_we <= bulk_we;
+      delay_write_mode <= {write_enable, write_mode[1:0]};
       // only in read mode 1 & 3
       read_finish <= read_mode[0] && read_cell == size;
       // ending flags. for last_write, use size - 1 because it has extra delay

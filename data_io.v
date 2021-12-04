@@ -17,14 +17,14 @@ module data_io(
     //master AXI interface - sends data back to DRAM
     output wire  M_AXIS_TVALID, // Master Stream Ports. TVALID indicates that the master is driving a valid transfer, A transfer takes place when both TVALID and TREADY are asserted. 
     output wire [31:0] M_AXIS_TDATA, // TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
-    output wire [1:0] M_AXIS_TKEEP, // 
+    output wire [3:0] M_AXIS_TKEEP, // 
     output reg  M_AXIS_TLAST, // TLAST indicates the boundary of a packet.
     input wire  M_AXIS_TREADY, // TREADY indicates that the slave can accept a transfer in the current cycle.
     
     //slave AXI interface - recieves data from DRAM
     output wire  S_AXIS_TREADY, // Ready to accept data in
     input wire [31:0] S_AXIS_TDATA, // Data in
-    input wire [1:0] S_AXIS_TKEEP, // almost always high - indicates that data bytes are not null
+    input wire [3:0] S_AXIS_TKEEP, // almost always high - indicates that data bytes are not null
     input wire  S_AXIS_TLAST, // Indicates boundary of last packet
     input wire  S_AXIS_TVALID // Data is in valid
     );
@@ -53,7 +53,7 @@ module data_io(
     assign TX = M_AXIS_TREADY && M_AXIS_TVALID; //internal flag: we transmitted a word to output stream
     assign RX = S_AXIS_TREADY && S_AXIS_TVALID; //internal flag: we recieved a word from input stream
     assign M_AXIS_TVALID = out_state == 1 || out_state == 2 || M_AXIS_TLAST; //we want to transmit if we are in state 2, or if we have reached the end of a packet
-    assign M_AXIS_TKEEP = (out_state == 1 || out_state == 2) ? 3 : 0; //if we are in state 2, then the data values are a sum that we want to save and should be labeled as such
+    assign M_AXIS_TKEEP = (out_state == 1 || out_state == 2) ? 15 : 0; //if we are in state 2, then the data values are a sum that we want to save and should be labeled as such
     
     assign S_AXIS_TREADY = (out_state < 2) && M_AXIS_TREADY && itf_ready; //ready to process a new bit of data as long as output FIFO is ready and interface is ready
     assign M_AXIS_TDATA = 
