@@ -16,14 +16,14 @@ module data_io(
     
     //master AXI interface - sends data back to DRAM
     output wire  M_AXIS_TVALID, // Master Stream Ports. TVALID indicates that the master is driving a valid transfer, A transfer takes place when both TVALID and TREADY are asserted. 
-    output wire [15:0] M_AXIS_TDATA, // TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
+    output wire [31:0] M_AXIS_TDATA, // TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
     output wire [1:0] M_AXIS_TKEEP, // 
     output reg  M_AXIS_TLAST, // TLAST indicates the boundary of a packet.
     input wire  M_AXIS_TREADY, // TREADY indicates that the slave can accept a transfer in the current cycle.
     
     //slave AXI interface - recieves data from DRAM
     output wire  S_AXIS_TREADY, // Ready to accept data in
-    input wire [15:0] S_AXIS_TDATA, // Data in
+    input wire [31:0] S_AXIS_TDATA, // Data in
     input wire [1:0] S_AXIS_TKEEP, // almost always high - indicates that data bytes are not null
     input wire  S_AXIS_TLAST, // Indicates boundary of last packet
     input wire  S_AXIS_TVALID // Data is in valid

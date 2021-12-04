@@ -72,7 +72,7 @@ module memory(
   input [5:0] size,
   input [4:0] read_page_line,
   input [4:0] write_page_line,
-  output reg [31:0] out_data,
+  output [31:0] out_data,
   output [1:0] next_read_mode,
   output reg read_finish,
   output reg last_write,
@@ -106,11 +106,17 @@ module memory(
   wire [31:0] sumof;
   wire [31:0] in_a;
 
-  adder s0(data[write_mode[1:0] == 3 ? write_index : read_index], in_data, sumof);
+  reg [31:0] data_read;
+
+  wire [10:0] true_write_index = write_mode[1] ? delay_write_index : write_index;
+
+  adder s0(data_read, in_data, sumof);
+
+  assign out_data = write_mode[1] || read_mode == 0 ? 32'b0 : data_read;
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior
-      out_data <= 0;
+      data_read <= 0;
       read_finish <= 0;
       last_write <= 0;
       last_read <= 0;
@@ -127,19 +133,16 @@ module memory(
       read_cell <= read_mode > 0 ? read_cell == size ? 0 : read_cell + 1 : read_cell;
       write_cell <= write_enable ? write_cell == size ? 0 : write_cell + 1 : write_cell;
       cont_write <= |write_mode[1:0] && write_mode[3] && write_mode[2] ? 7 : cont_write > 0 ? cont_write - 1 : 0;
+      
+      data_read <= data[write_mode[1:0] == 3 ? write_index : read_index];
       // perform read operation
       if(write_mode[1]) begin
-        out_data <= 0;
-        delay_write_value <= write_mode[0] ? sumof : data[write_index] == 1 ? in_data : 0;
+        delay_write_value <= in_data;
         delay_write_index <= write_index;
-      end else begin
-        out_data <= read_mode > 0 ? data[read_index] : 0;
       end
       // perform write operation
-      if(write_mode[1:0] == 1 && write_enable) begin
-        data[write_index] <= in_data;
-      end else if(write_mode[1] && write_enable) begin
-        data[delay_write_index] <= delay_write_value;
+      if(write_enable) begin
+        data[true_write_index] <= write_mode[1] ? write_mode[0] ? sumof : data_read == 1 ? delay_write_value : 0 : in_data;
       end
       // delayed version of inputs
       delay_read_mode <= read_mode;
