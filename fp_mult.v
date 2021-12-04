@@ -206,10 +206,12 @@ module multiplier
               Constant3_out1_1);
   assign Subtract_1 = {24'b0, AE};
   assign Subtract_2 = {24'b0, BE};
-  assign Subtract_add_temp = AE + BE;
+  assign Subtract_add_temp = Subtract_1 + Subtract_2;
   assign Subtract_out1 = Subtract_add_temp[8:0];
   assign Bit_Concat_out1_2 = {Constant2_out1_1, Switch1_out1_1};
-  assign Add1_add_temp = Bit_Concat1_out1_1 + Bit_Concat_out1_2;
+  assign Add1_1 = {24'b0, Bit_Concat1_out1_1};
+  assign Add1_2 = {24'b0, Bit_Concat_out1_2};
+  assign Add1_add_temp = Add1_1 + Add1_2;
   assign Add1_out1 = Add1_add_temp[8:0];
   assign Subtract2_1 = {23'b0, Subtract_out1};
   assign Subtract2_2 = {23'b0, Add1_out1};
@@ -259,14 +261,14 @@ module multiplier
   assign Constant_out1_2 = 1'b1;
   assign Add_4 = {9'b0, Bit_Slice1_out1_2};
   assign Add_5 = {31'b0, Constant_out1_2};
-  assign Add_add_temp_1 = Bit_Slice1_out1_2 + Constant_out1_2;
+  assign Add_add_temp_1 = Add_4 + Add_5;
   assign Add_out1_1 = Add_add_temp_1[23:0];
   assign Switch_out1_4 = (Logical_Operator_out1_5 == 1'b0 ? Delay2_out1_dtc :
               Add_out1_1);
   assign Bit_Slice2_out1_1 = Switch_out1_4[23];
   assign Add1_4 = {24'b0, Constant1_out1_4};
   assign Add1_5 = {31'b0, Bit_Slice2_out1_1};
-  assign Add1_add_temp_1 = Constant1_out1_4 + Bit_Slice2_out1_1;
+  assign Add1_add_temp_1 = Add1_4 + Add1_5;
   assign Add1_out1_1 = Add1_add_temp_1[7:0];
   assign Add_7 = {24'b0, Add1_out1_1};
   assign Add_8 = {{22{Switch2_out1_2[9]}}, Switch2_out1_2};

@@ -17,7 +17,7 @@
 
 `timescale 1 ns / 1 ns
 
-module nfp_add_single
+module adder
           (nfp_in1,
            nfp_in2,
            nfp_out);  input   [31:0] nfp_in1;  // ufix32
