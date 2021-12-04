@@ -22,7 +22,8 @@ module adder
            nfp_in2,
            nfp_out);  input   [31:0] nfp_in1;  // ufix32
   input   [31:0] nfp_in2;  // ufix32
-  output  [31:0] nfp_out;  // ufix32  wire AS;  // ufix1
+  output  [31:0] nfp_out;  // ufix32  
+  wire AS;  // ufix1
   wire [7:0] AE;  // ufix8
   wire [22:0] AM;  // ufix23
   wire BS;  // ufix1
