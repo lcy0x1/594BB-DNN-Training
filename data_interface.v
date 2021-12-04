@@ -26,8 +26,8 @@ module data_interface(
     input clear,
     input [31:0] data_in,
     input enable,
-    output wire [31:0] data_out,
-    output wire y_valid,
+    output reg [31:0] data_out,
+    output reg y_valid,
     output reg [31:0] out_count,
     output reg out_count_valid,
     output reg ready
@@ -42,7 +42,7 @@ module data_interface(
   controller main(clk, clear, enable, operation, data, out_data);
 
   always @(posedge clk) begin
-    if(reset) begin
+    if(clear) begin
       counter <= 0;
       operation <= 0;
       data <= 0;
