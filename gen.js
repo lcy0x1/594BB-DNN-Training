@@ -13,15 +13,15 @@ for (let i = 0; i < 64; i++) {
         if (!w2_arr[i]) w2_arr[i] = [];
         if (!w3_arr[i]) w3_arr[i] = [];
         if (!dy_arr[i]) dy_arr[i] = [];
-        w_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        w_arr[i][j] = seed % 131072 - 65536;
         seed = seed * 107 % 100000007;
-        x_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        x_arr[i][j] = seed % 131072 - 65536;
         seed = seed * 107 % 100000007;
-        w2_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        w2_arr[i][j] = seed % 131072 - 65536;
         seed = seed * 107 % 100000007;
-        w3_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        w3_arr[i][j] = seed % 131072 - 65536;
         seed = seed * 107 % 100000007;
-        dy_arr[i][j] = seed % 4 == 0 ? 1 : 0;
+        dy_arr[i][j] = seed % 131072 - 65536;
         seed = seed * 107 % 100000007;
     }
 }
