@@ -7,11 +7,10 @@ module testbench();
   reg enable;
   reg clk;
   reg reset;
-  reg [31:0] mode;
   reg signed [31:0] in_data;
   wire signed [31:0] out_data;
   
-  controller main(clk, enable, reset, mode, in_data, out_data);
+  data_interface main(clk, enable, reset, in_data, out_data);
   
   initial begin
     #1;
@@ -27,7 +26,6 @@ module testbench();
     clk = 0;
     reset = 0;
     enable = 0;
-    mode = 0;
     in_data = 0;
     #(CLK);
     reset = 1;
@@ -2089,35 +2087,6 @@ in_data = 790;
 in_data = -31557;
 #(CLK);
 
-// multiplication of W1 and X is W1X'
-// here it means transpose X, W1=#0, X=#5, answer is W1*X
-//A1 = W1X
-mode = 32'h962501;
-#(CLK*128);
-mode = 0;
-#(CLK);
-
-// A2 = W2*A1
-mode = 32'hc66241;
-#(CLK*128);
-mode = 0;
-#(CLK);
-
-
-// 0: unused
-// 0: overwrite
-// 8: relu derivative: B3
-// 6: transpose second operand, use ReLU
-// d: target: Y
-// 6: second operand: A2
-// 1: first operand: W3
-// 1: opcode = 1
-// Y = W3 * A2
-mode = 32'h0086d611;
-#(CLK*128);
-mode = 0;
-#(CLK);
-
 
 mode = 32'h182;
 in_data = -29720;
@@ -2637,75 +2606,6 @@ in_data = -34814;
 mode = 0;
 #(CLK);
 
-// Operation 5
-// 0: unused
-// 1: hadamard product
-// 0: no relu derivative
-// c: transpose both, no relu
-// c: target: P2
-// 8: second operand: P3
-// 1: first operand: W3^T
-// 1: opcode = 1
-mode = 32'h010cc811;
-#(CLK*128);
-mode = 0;
-#(CLK)
-
-// Operation 6
-// 0: unused
-// 2: addition
-// 0: no relu derivative
-// 0: no transpose, no relu
-// 1: target: W3
-// 6: second operand: A2^T
-// 8: first operand: P3
-// 1: opcode = 1
-mode = 32'h02001681;
-#(CLK*128);
-mode = 0;
-#(CLK)
-
-// Operation 7
-// 0: unused
-// 1: hadamard product
-// 0: no relu derivative
-// c: transpose both, no relu
-// 9: target: P1
-// c: second operand: P2
-// 0: first operand: W2^T
-// 1: opcode = 1
-mode = 32'h010c9c01;
-#(CLK*128);
-mode = 0;
-#(CLK)
-
-// Operation 8
-// 0: unused
-// 2: addition
-// 0: no relu derivative
-// 0: no transpose, no relu
-// 4: target: w2
-// 2: second operand: A1^T
-// c: first operand: P2
-// 1: opcode = 1
-mode = 32'h020042c1;
-#(CLK*128);
-mode = 0;
-#(CLK)
-
-// Operation 9
-// 0: unused
-// 2: addition
-// 0: no relu derivative
-// 0: no transpose, no relu
-// 0: target: w1
-// 4: second operand: X^T
-// 9: first operand: P1
-// 1: opcode = 1
-mode = 32'h02000491;
-#(CLK*128);
-mode = 0;
-#(CLK)
 
 
 
