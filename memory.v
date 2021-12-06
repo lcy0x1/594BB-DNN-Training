@@ -136,7 +136,7 @@ module memory(
       write_cell <= write_enable ? write_cell == size ? 0 : write_cell + 1 : write_cell;
       cont_write <= |write_mode[1:0] && write_mode[3] && write_mode[2] ? 7 : cont_write > 0 ? cont_write - 1 : 0;
       
-      data_read <= data[write_mode[1:0] == 3 ? write_index : read_index];
+      data_read <= data[write_mode[1] ? write_index : read_index];
       // perform read operation
       if(write_mode[1]) begin
         delay_write_value <= in_data;
