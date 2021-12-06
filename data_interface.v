@@ -34,30 +34,34 @@ module data_interface(
 );
 
   reg [31:0] counter;
+  reg [31:0] temp_op;
   reg [31:0] operation;
   reg [31:0] data;
 
   wire [31:0] out_data;
 
-  controller main(clk, clear, enable, operation, data, out_data);
+  controller main(clk, enable, clear, operation, data, out_data);
 
   always @(posedge clk) begin
     if(clear) begin
       counter <= 0;
+      temp_op <= 0;
       operation <= 0;
       data <= 0;
       ready <= 1;
     end else if(enable) begin
       if(counter == 0) begin
         counter <= data_in;
+        temp_op <= 0;
         operation <= 0;
         data <= 0;
         ready <= 1;
-      end else if(operation == 0) begin
-        operation <= data_in;
+      end else if(temp_op == 0) begin
+        temp_op <= data_in;
         data <= 0;
         ready <= data_in[3:0] == 2;
       end else begin
+        operation <= temp_op;
         data <= data_in;
         counter <= counter - 1;    
         ready <= data_in[3:0] == 2;

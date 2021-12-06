@@ -9,8 +9,13 @@ module testbench();
   reg reset;
   reg signed [31:0] in_data;
   wire signed [31:0] out_data;
+
+  wire out_valid;
+  wire [31:0] out_count;
+  wire c_valid;
+  wire ready;
   
-  data_interface main(clk, enable, reset, in_data, out_data);
+  data_interface main(clk, reset, in_data, enable, out_data, out_valid, out_count, c_valid, ready);
   
   initial begin
     #1;
@@ -34,7 +39,10 @@ module testbench();
     enable = 1;
     #(CLK);
 
-mode = 32'h02;
+in_data = 256;
+#(CLK);
+in_data = 32'h02;
+#(CLK);
 in_data = -10617;
 #(CLK);
 in_data = 28633;
@@ -547,7 +555,10 @@ in_data = 16050;
 #(CLK);
 in_data = -60379;
 #(CLK);
-mode = 32'h42;
+in_data = 256;
+#(CLK);
+in_data = 12'h42;
+#(CLK);
 in_data = 19124;
 #(CLK);
 in_data = -57623;
@@ -1060,7 +1071,10 @@ in_data = -55445;
 #(CLK);
 in_data = -41549;
 #(CLK);
-mode = 32'h12;
+in_data = 256;
+#(CLK);
+in_data = 32'h12;
+#(CLK);
 in_data = -27584;
 #(CLK);
 in_data = -49617;
@@ -1573,7 +1587,10 @@ in_data = 48149;
 #(CLK);
 in_data = 62000;
 #(CLK);
-mode = 32'h52;
+in_data = 256;
+#(CLK);
+in_data = 32'h52;
+#(CLK);
 in_data = 51558;
 #(CLK);
 in_data = 21080;
@@ -2086,9 +2103,22 @@ in_data = 790;
 #(CLK);
 in_data = -31557;
 #(CLK);
-
-
-mode = 32'h182;
+in_data = 128;
+#(CLK);
+in_data = 32'h00962501;
+#(CLK*129);
+in_data = 128;
+#(CLK);
+in_data = 32'h00c66241;
+#(CLK*129);
+in_data = 128;
+#(CLK);
+in_data = 32'h0086d611;
+#(CLK*129);
+in_data = 256;
+#(CLK);
+in_data = 32'h182;
+#(CLK);
 in_data = -29720;
 #(CLK);
 in_data = 35964;
@@ -2601,12 +2631,14 @@ in_data = 15374;
 #(CLK);
 in_data = -34814;
 #(CLK);
-
-
-mode = 0;
+in_data = 128;
 #(CLK);
-
-
+in_data = 32'h010cc811;
+#(CLK*129);
+in_data = 128;
+#(CLK);
+in_data = 32'h02001681;
+#(CLK*129);
 
 
     $finish;

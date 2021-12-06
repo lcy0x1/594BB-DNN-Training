@@ -113,7 +113,7 @@ module memory(
 
   adder s0(data_read, in_data, sumof);
 
-  assign out_data = write_mode[1] || read_mode == 0 ? 32'b0 : data_read;
+  assign out_data = write_mode[1] || delay_read_mode == 0 ? 32'b0 : data_read;
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior

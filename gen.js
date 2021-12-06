@@ -37,7 +37,7 @@ for (let i1 = 0; i1 < 2; i1++) {
     }
 }
 
-str0 += `in_data = 256;\n#(CLK);\nin_data = 42'h02;\n#(CLK);\n`;
+str0 += `in_data = 256;\n#(CLK);\nin_data = 32'h42;\n#(CLK);\n`;
 for (let i = 0; i < 16; i++) {
     for (let j = 0; j < 16; j++) {
         str0 += `in_data = ${w2_arr[i][j]};\n`;
