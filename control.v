@@ -87,10 +87,10 @@ module controller(
 // }
 
 
-  wire [2:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 0 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 0 ? 3'b100 : 0 : 0;
-  wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 1 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 1 ? 3'b100 : 0 : 0;
-  wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 2 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 2 ? 3'b100 : 0 : 0;
-  wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 3 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 3 ? 3'b100 : 0 : 0;
+  wire [2:0] we_0 = opcode == 2 ? op_a[3:2] == 0 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 0 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 0 ? 3'b101 : 0 : 0;
+  wire [2:0] we_1 = opcode == 2 ? op_a[3:2] == 1 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 1 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 1 ? 3'b101 : 0 : 0;
+  wire [2:0] we_2 = opcode == 2 ? op_a[3:2] == 2 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 2 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 2 ? 3'b101 : 0 : 0;
+  wire [2:0] we_3 = opcode == 2 ? op_a[3:2] == 3 ? {1'b0, op_b[0]? 2'b10 : op_b[1]? 2'b11 : 2'b01} : 0 : opcode == 1 ? op_c[3:2] == 3 ? {1'b1, op_f[0]? 2'b10 : op_f[1]? 2'b11 : 2'b01} : op_e[3:2] == 3 ? 3'b101 : 0 : 0;
 
   // write address for register file
   wire [1:0] wp_0 = opcode == 1 ? op_c[3:2] == 0 ? op_c[1:0] : op_e[3:2] == 0 ? op_e[1:0] : 0 : opcode == 2 ? op_a[3:2] == 0 ? op_a[1:0] : 0 : 0;
