@@ -37,6 +37,8 @@ module data_interface(
   reg [31:0] temp_op;
   reg [31:0] operation;
   reg [31:0] data;
+  reg [31:0] out_count_temp;
+  reg [8:0] size;
 
   wire [31:0] out_data;
 
@@ -48,10 +50,22 @@ module data_interface(
       temp_op <= 0;
       operation <= 0;
       data <= 0;
+      data_out <= 0;
+      y_valid <= 0;
+      out_count <= 0;
+      out_count_valid <= 0;
       ready <= 1;
+      size <= 9'b001001111; // 16x16
     end else if(enable) begin
       if(counter == 0) begin
-        counter <= data_in;
+        if(data_in[19:16] == 0) begin
+          counter <= data_in[15:0];
+        end else if(data_in[19:16] == 1 && !out_count_valid) begin
+          out_count <= data_in[15:0];
+          out_valid <= 1;
+        end else if(data_in[19:16] == 2) begin
+          size <= data_in[8:0];
+        end
         temp_op <= 0;
         operation <= 0;
         data <= 0;
@@ -68,6 +82,10 @@ module data_interface(
       end
       data_out <= out_data;
       y_valid <= operation[3:0] == 3;
+      if(out_count_valid) begin
+        out_count <= 0;
+        out_count_valid <= 0;
+      end
     end
   end
 

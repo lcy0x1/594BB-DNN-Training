@@ -47,10 +47,9 @@ module controller(
   input reset,
   input [31:0] operation,
   input [31:0] in_data,
-  output [31:0] out_data
+  output [31:0] out_data,
+  input [8:0] size
 );
-
-  wire [8:0] size = 9'b001001111; //TODO
   
   // decode wire
   wire [3:0] opcode = operation[3:0];
