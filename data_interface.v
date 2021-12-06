@@ -2,6 +2,7 @@
 /*
 Author: Arthur Wang
 Create Date: Nov 19
+Edit Date: Dec 5
 
 Outer Interface of verilog modules
 
@@ -42,7 +43,7 @@ module data_interface(
 
   wire [31:0] out_data;
 
-  controller main(clk, enable, clear, operation, data, out_data);
+  controller main(clk, enable, clear, operation, data, out_data, size);
 
   always @(posedge clk) begin
     if(clear) begin
@@ -62,7 +63,7 @@ module data_interface(
           counter <= data_in[15:0];
         end else if(data_in[19:16] == 1 && !out_count_valid) begin
           out_count <= data_in[15:0];
-          out_valid <= 1;
+          out_count_valid <= 1;
         end else if(data_in[19:16] == 2) begin
           size <= data_in[8:0];
         end
