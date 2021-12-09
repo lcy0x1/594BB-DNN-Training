@@ -2,7 +2,7 @@
 /*
 Author: Arthur Wang
 Create Date: Nov 19
-Edit Date: Dec 5
+Edit Date: Dec 9
 
 Outer Interface of verilog modules
 
@@ -59,13 +59,15 @@ module data_interface(
       size <= 9'b001001111; // 16x16
     end else if(enable) begin
       if(counter == 0) begin
-        if(data_in[19:16] == 0) begin
-          counter <= data_in[15:0];
-        end else if(data_in[19:16] == 1 && !out_count_valid) begin
-          out_count <= data_in[15:0];
-          out_count_valid <= 1;
-        end else if(data_in[19:16] == 2) begin
-          size <= data_in[8:0];
+        if(data_in[27:20] == 8'h64) begin
+          if(data_in[19:16] == 0) begin
+            counter <= data_in[15:0];
+          end else if(data_in[19:16] == 1 && !out_count_valid) begin
+            out_count <= data_in[15:0];
+            out_count_valid <= 1;
+          end else if(data_in[19:16] == 2) begin
+            size <= data_in[8:0];
+          end
         end
         temp_op <= 0;
         operation <= 0;
@@ -78,8 +80,8 @@ module data_interface(
       end else begin
         operation <= temp_op;
         data <= data_in;
-        counter <= counter - 1;    
-        ready <= data_in[3:0] == 2;
+        counter <= counter - 1;
+        ready <= temp_op[3:0] == 2;
       end
       data_out <= out_data;
       y_valid <= operation[3:0] == 3;
