@@ -111,7 +111,7 @@ module memory(
 
   wire [10:0] true_write_index = delay_write_mode[1] ? delay_write_index : write_index;
 
-  adder s0(data_read, in_data, sumof);
+  adder s0(data_read, delay_write_value, sumof);
 
   assign out_data = write_mode[1] || delay_read_mode == 0 ? 32'b0 : data_read;
 

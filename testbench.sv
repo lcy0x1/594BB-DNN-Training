@@ -557,7 +557,7 @@ in_data = -60379;
 #(CLK);
 in_data = 256;
 #(CLK);
-in_data = 12'h42;
+in_data = 32'h42;
 #(CLK);
 in_data = 19124;
 #(CLK);
@@ -2639,6 +2639,10 @@ in_data = 128;
 #(CLK);
 in_data = 32'h02001681;
 #(CLK*129);
+in_data = 256;
+#(CLK);
+in_data = 32'h13;
+#(CLK*257);
 
 
     $finish;

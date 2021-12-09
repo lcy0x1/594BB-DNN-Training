@@ -144,7 +144,7 @@ module blockmem(
         raddr <= switch ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
       end else begin
         read_slice_ind <= |lr ? read_slice_ind == 7 ? 0 : read_slice_ind + 1 : read_slice_ind;
-        raddr <= lr[7] ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
+        raddr <= |lr && read_slice_ind == 7 ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
         delay_read_slice_ind <= read_slice_ind;
       end
     end
