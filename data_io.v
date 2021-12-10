@@ -1,7 +1,8 @@
 `include "data_interface.v"
 /*
 Author: Arthur Wang
-Create Data: Oct 31
+Create Date: Oct 31
+Edit Date: Dec 9
 
 Bridge between verilog modules and DMA
 
@@ -39,28 +40,29 @@ module data_io(
     //10: output full
     //11: Invalid
     
-    reg [15:0] in_buffer;
+    reg [31:0] in_buffer;
     reg in_enable;
     
-    reg [15:0] in_count;
-    reg [15:0] out_count;
-    wire [15:0] data_out;
-    wire [15:0] wr_out_count;
+    reg [31:0] in_count;
+    reg [31:0] out_count;
+    wire [31:0] data_out;
+    wire [31:0] wr_out_count;
     wire wr_outc_valid;
+    wire itf_ready;
     
-    reg [15:0] databuf [1:0]; //store each pair of data
+    reg [31:0] databuf [1:0]; //store each pair of data
     wire TX, RX;
     assign TX = M_AXIS_TREADY && M_AXIS_TVALID; //internal flag: we transmitted a word to output stream
     assign RX = S_AXIS_TREADY && S_AXIS_TVALID; //internal flag: we recieved a word from input stream
     assign M_AXIS_TVALID = out_state == 1 || out_state == 2 || M_AXIS_TLAST; //we want to transmit if we are in state 2, or if we have reached the end of a packet
     assign M_AXIS_TKEEP = (out_state == 1 || out_state == 2) ? 15 : 0; //if we are in state 2, then the data values are a sum that we want to save and should be labeled as such
     
-    assign S_AXIS_TREADY = (out_state < 2) && M_AXIS_TREADY && itf_ready; //ready to process a new bit of data as long as output FIFO is ready and interface is ready
+    assign S_AXIS_TREADY = (out_state < 2) && M_AXIS_TREADY; //ready to process a new bit of data as long as output FIFO is ready and interface is ready
     assign M_AXIS_TDATA = 
             out_state == 1 ? databuf[0] : 
             out_state == 2 ? databuf[1] : 0;
     
-    wire enable = out_state < 2 && in_enable && (RX || in_count == 0 || ~itf_ready);
+    wire enable = out_state < 2 && in_enable && (RX || in_count == 0);
     wire itf_y_valid;
     wire y_valid = enable && itf_y_valid;
     

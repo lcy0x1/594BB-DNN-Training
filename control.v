@@ -5,7 +5,7 @@
 /*
 Author: Arthur Wang, Ian Wu
 Creation Date: Nov 14 
-Last Modified: Dec 5
+Last Modified: Dec 9
 
 TODO: use hadamard product
 TODO: additive update as configuration for op-code = 1
@@ -195,7 +195,13 @@ module controller(
  
   m8x8 mult(clk, reset, enable, en, op_d, w_in, x_in, clear_in, y_out, clear_out, b_out);
 
-  assign out_data = opcode == 3 ? op_a[3] == 0 ? out_data_0 : op_a[3] == 1 ? out_data_1 : 0 : 0;
+  reg [3:0] delay_opcode;
+  reg [3:0] delay_op_a;
+  assign out_data = delay_opcode == 3 ? 
+      delay_op_a[3:2] == 0 ? out_data_0 : 
+      delay_op_a[3:2] == 1 ? out_data_1 : 
+      delay_op_a[3:2] == 2 ? out_data_2 : 
+      delay_op_a[3:2] == 3 ? out_data_3 : 0 : 0;
 
   // filter out the upper edge of <opcode == 1> and persist only when memory is still shifting data out.
   assign en = opcode == 1 && !old_en || ind_wc > 0 || ind_wl > 0 || ind_xl > 0;
@@ -210,6 +216,8 @@ module controller(
         ind_xl <= 0;
       	y_valid <= 0;
       	old_en <= 0;
+        delay_opcode <= 0;
+        delay_op_a <= 0;
     end else if(enable) begin
       if(en) begin
         // count the duration for memory to shift data out
@@ -221,6 +229,9 @@ module controller(
       y_valid <= clear_out;
       // delay <op_code == 1>
       old_en <= opcode == 1;
+
+      delay_opcode <= opcode;
+      delay_op_a <= op_a;
     end
   end
   

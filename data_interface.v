@@ -40,6 +40,7 @@ module data_interface(
   reg [31:0] data;
   reg [31:0] out_count_temp;
   reg [8:0] size;
+  reg [31:0] delay_op;
 
   wire [31:0] out_data;
 
@@ -49,6 +50,7 @@ module data_interface(
     if(clear) begin
       counter <= 0;
       temp_op <= 0;
+      delay_op <= 0;
       operation <= 0;
       data <= 0;
       data_out <= 0;
@@ -84,7 +86,8 @@ module data_interface(
         ready <= temp_op[3:0] == 2;
       end
       data_out <= out_data;
-      y_valid <= operation[3:0] == 3;
+      delay_op <= operation;
+      y_valid <= delay_op[3:0] == 3;
       if(out_count_valid) begin
         out_count <= 0;
         out_count_valid <= 0;
