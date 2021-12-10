@@ -90,6 +90,7 @@ module blockmem(
   wire [4:0] mid_raddr [7:0]; // cached read address
   wire [7:0] lr;
   reg [2:0] delay_read_slice_ind;
+  reg [1:0] delay_read_mode;
 
   // write related variables
   wire [7:0] lw; // flags for last write, for updating <ind>
@@ -121,7 +122,7 @@ module blockmem(
   memory slice_6(clk, enable, reset, wms[6], mem_en[5], write_mode[2] ? bus_in[6] : in_data, size[5:0], mid_raddr[5],       mid_waddr[5],        x_out[6], mem_en[6], clear_out[6], lw[6], lr[6], mid_raddr[6], mid_waddr[6]);
   memory slice_7(clk, enable, reset, wms[7], mem_en[6], write_mode[2] ? bus_in[7] : in_data, size[5:0], mid_raddr[6],       mid_waddr[6],        x_out[7], mem_en[7], clear_out[7], lw[7], lr[7], mid_raddr[7], mid_waddr[7]);
   
-  assign out_data = read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
+  assign out_data = delay_read_mode == 2 ? x_out[{1'b0, delay_read_slice_ind}] : 32'b0;
 
   always @(posedge clk) begin
     if(reset) begin // reset behavior: clear al registers
@@ -130,6 +131,7 @@ module blockmem(
       raddr <= 0;
       waddr <= 0;
       delay_read_slice_ind <= 0;
+      delay_read_mode <= 0;
     end else if(enable) begin
       // the waddr update logic is different in write mode 1 and write mode 2
       if(|write_mode[1:0] && !write_mode[2]) begin
@@ -147,6 +149,7 @@ module blockmem(
         raddr <= |lr && read_slice_ind == 7 ? raddr == size[8:6] ? 0 : raddr + 1 : raddr;
         delay_read_slice_ind <= read_slice_ind;
       end
+      delay_read_mode <= read_mode;
     end
   end
     
